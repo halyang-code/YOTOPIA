@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>YOTOPIA</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+      background: #F5EDE8;
+      min-height: 100vh;
+      padding-bottom: 72px;
+      color: #664B3A;
+    }
+
+    /* ===== 顶部导航 ===== */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #F5EDE8;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top-nav .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .top-nav .brand img {
+      height: 26px;
+    }
+    .top-nav .brand span {
+      font-size: 16px;
+      font-weight: 700;
+      color: #664B3A;
+      letter-spacing: 1px;
+    }
+    .top-nav .profile-btn {
+      background: none;
+      border: none;
+      font-size: 13px;
+      color: #9A8A7E;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .top-nav .profile-btn:active {
+      background: rgba(102,75,58,0.08);
+    }
+
+    /* ===== 页面容器 ===== */
+    .page {
+      display: none;
+      padding: 0 20px 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    .page.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #664B3A;
+      margin-bottom: 16px;
+    }
+
+    /* ===== 宠物卡片 ===== */
+    .pet-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(102,75,58,0.06);
+      margin-bottom: 16px;
+    }
+    .pet-card .pet-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .pet-card .pet-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #F0E8E2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #C4B5A9;
+      flex-shrink: 0;
+    }
+    .pet-card .pet-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #664B3A;
+      margin-bottom: 2px;
+    }
+    .pet-card .pet-meta {
+      font-size: 13px;
+      color: #9A8A7E;
+      line-height: 1.6;
+    }
+    .pet-card .pet-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .pet-card .pet-actions button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      background: #F5EDE8;
+      color: #664B3A;
+      transition: background 0.2s;
+    }
+    .pet-card .pet-actions button:active {
+      background: #E8DDD6;
+    }
+
+    /* ===== 空状态 ===== */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: #C4B5A9;
+    }
+    .empty-state .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    .empty-state p {
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    /* ===== 专属卡片预览 ===== */
+    .card-preview-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 48px 24px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(102,75,58,0.06);
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-preview-box .preview-icon {
+      font-size: 52px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    .card-preview-box .preview-text {
+      font-size: 14px;
+      color: #C4B5A9;
+      letter-spacing: 0.5px;
+      line-height: 1.8;
+    }
+    .card-preview-box .preview-text small {
+      font-size: 12px;
+      color: #DBC6B4;
+    }
+
+    /* ===== 我的页面 ===== */
+    .profile-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(102,75,58,0.06);
+    }
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #F0E8E2;
+    }
+    .profile-row:last-of-type {
+      border-bottom: none;
+    }
+    .profile-row .label {
+      font-size: 14px;
+      color: #9A8A7E;
+    }
+    .profile-row .value {
+      font-size: 14px;
+      color: #664B3A;
+      font-weight: 500;
+    }
+    .profile-row button {
+      background: none;
+      border: none;
+      color: #664B3A;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .profile-row button:active {
+      background: #F0E8E2;
+    }
+    .logout-btn {
+      width: 100%;
+      padding: 14px;
+      background: #FFF0EE;
+      color: #C0392B;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: opacity 0.2s;
+    }
+    .logout-btn:active {
+      opacity: 0.7;
+    }
+
+    /* ===== 底部 Tab ===== */
+    .bottom-tab {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      display: flex;
+      border-top: 1px solid #F0E8E2;
+      padding: 6px 0;
+      padding-bottom: max(6px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+    .tab-item {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      cursor: pointer;
+      transition: color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab-item .tab-icon {
+      font-size: 20px;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .tab-item .tab-label {
+      font-size: 11px;
+      color: #C4B5A9;
+      letter-spacing: 0.3px;
+    }
+    .tab-item.active .tab-label {
+      color: #664B3A;
+      font-weight: 600;
+    }
+
+    /* ===== Slogan ===== */
+    .brand-slogan {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #DBC6B4;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== 顶部导航 ===== -->
+  <nav class="top-nav">
+    <div class="brand">
+      <span>🐾 YOTOPIA</span>
+    </div>
+    <button class="profile-btn" onclick="switchTab('profile')">👤 我的</button>
+  </nav>
+
+  <!-- ===== 首页 ===== -->
+  <div id="page-home" class="page active">
+    <div id="pet-card-container"></div>
+    <div class="brand-slogan">让陪伴，融入自然</div>
+  </div>
+
+  <!-- ===== 宠物 ===== -->
+  <div id="page-pets" class="page">
+    <div class="page-title">🐱 我的宠物</div>
+    <div id="pet-detail-container"></div>
+  </div>
+
+  <!-- ===== 专属卡片 ===== -->
+  <div id="page-card" class="page">
+    <div class="page-title">🎴 专属卡片</div>
+    <div class="card-preview-box">
+      <div class="preview-icon">🎴</div>
+      <div class="preview-text">
+        卡片正在设计中...<br>
+        <small>敬请期待</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 我的 ===== -->
+  <div id="page-profile" class="page">
+    <div class="page-title">👤 我的</div>
+    <div class="profile-card">
+      <div class="profile-row">
+        <span class="label">微信号</span>
+        <span class="value" id="profile-wechat">-</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">昵称</span>
+        <span class="value" id="profile-name">-</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">修改密码</span>
+        <button onclick="handleChangePassword()">修改 →</button>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()">退出登录</button>
+    </div>
+  </div>
+
+  <!-- ===== 底部 Tab ===== -->
+  <div class="bottom-tab">
+    <div class="tab-item active" onclick="switchTab('home')" data-tab="home">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-label">首页</span>
+    </div>
+    <div class="tab-item" onclick="switchTab('pets')" data-tab="pets">
+      <span class="tab-icon">🐱</span>
+      <span class="tab-label">宠物</span>
+    </div>
+    <div class="tab-item" onclick="switchTab('card')" data-tab="card">
+      <span class="tab-icon">🎴</span>
+      <span class="tab-label">专属卡片</span>
+    </div>
+    <div class="tab-item" onclick="switchTab('profile')" data-tab="profile">
+      <span class="tab-icon">👤</span>
+      <span class="tab-label">我的</span>
+    </div>
+  </div>
+
+  <script>
+    const WORKER_URL = 'https://delicate-dew-63c6.andy99jjc.workers.dev';
+    let currentUser = null;
+    let userPets = [];
+
+    // ===== 初始化 =====
+    (function() {
+      const stored = localStorage.getItem('yotopia_user');
+      if (!stored) {
+        window.location.href = 'index.html';
+        return;
+      }
+      currentUser = JSON.parse(stored);
+      loadProfile();
+      loadPets();
+    })();
+
+    // ===== Tab 切换 =====
+    function switchTab(tab) {
+      // 切换页面
+      document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+      document.getElementById('page-' + tab).classList.add('active');
+      // 切换底部 tab 高亮
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      const activeTab = document.querySelector(`.tab-item[data-tab="${tab}"]`);
+      if (activeTab) activeTab.classList.add('active');
+      // 滚回顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ===== 加载宠物数据 =====
+    async function loadPets() {
+      try {
+        const res = await fetch(`${WORKER_URL}/api/my-pets`, {
+          headers: { 'X-User-Id': currentUser.id }
+        });
+        const data = await res.json();
+        if (data.success && data.pets) {
+          userPets = data.pets;
+        }
+      } catch (e) {
+        console.error('获取宠物失败:', e);
+      }
+      renderPets();
+    }
+
+    function renderPets() {
+      const cardContainer = document.getElementById('pet-card-container');
+      const detailContainer = document.getElementById('pet-detail-container');
+
+      if (!userPets || userPets.length === 0) {
+        cardContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🐾</div>
+            <p>还没有添加宠物<br>请联系管理员添加 🐱</p>
+          </div>
+        `;
+        detailContainer.innerHTML = '';
+        return;
+      }
+
+      // --- 首页：第一只宠物卡片 ---
+      const pet = userPets[0];
+      const photoHtml = pet.photo_url
+        ? `<img class="pet-avatar" src="${pet.photo_url}" alt="${pet.name}">`
+        : `<div class="pet-avatar">🐱</div>`;
+
+      cardContainer.innerHTML = `
+        <div class="pet-card">
+          <div class="pet-row">
+            ${photoHtml}
+            <div>
+              <div class="pet-name">${pet.name || '未命名'}</div>
+              <div class="pet-meta">
+                ${pet.birthday ? '🎂 ' + pet.birthday : ''}
+                ${pet.gender ? ' ｜ ' + (pet.gender === 'male' ? '♂ 男孩' : '♀ 女孩') : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // --- 宠物页：所有宠物 + 操作按钮 ---
+      let detailHtml = '';
+      userPets.forEach(p => {
+        const pPhoto = p.photo_url
+          ? `<img class="pet-avatar" src="${p.photo_url}" alt="${p.name}">`
+          : `<div class="pet-avatar">🐱</div>`;
+
+        detailHtml += `
+          <div class="pet-card">
+            <div class="pet-row">
+              ${pPhoto}
+              <div style="flex:1;">
+                <div class="pet-name">${p.name || '未命名'}</div>
+                <div class="pet-meta">
+                  ${p.birthday ? '🎂 ' + p.birthday : ''}
+                  ${p.gender ? ' ｜ ' + (p.gender === 'male' ? '♂ 男孩' : '♀ 女孩') : ''}
+                </div>
+              </div>
+            </div>
+            <div class="pet-actions">
+              <button onclick="uploadPhoto('${p.id}')">📸 上传照片</button>
+              <button onclick="editPet('${p.id}')">✏️ 编辑资料</button>
+            </div>
+          </div>
+        `;
+      });
+      detailContainer.innerHTML = detailHtml;
+    }
+
+    // ===== 上传照片 =====
+    function uploadPhoto(petId) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('pet_id', petId);
+        formData.append('photo', file);
+        try {
+          const res = await fetch(`${WORKER_URL}/api/upload-photo`, {
+            method: 'POST',
+            headers: { 'X-User-Id': currentUser.id },
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('上传成功 ✅');
+            loadPets();
+          } else {
+            alert(data.message || '上传失败');
+          }
+        } catch (e) {
+          alert('网络错误，请稍后重试');
+        }
+      };
+      input.click();
+    }
+
+    // ===== 编辑宠物 =====
+    function editPet(petId) {
+      const pet = userPets.find(p => p.id === petId);
+      if (!pet) return;
+      const name = prompt('宠物名字：', pet.name || '');
+      if (name === null) return;
+      const birthday = prompt('生日（如 2024-01-01）：', pet.birthday || '');
+      if (birthday === null) return;
+      const gender = prompt('性别（male / female）：', pet.gender || '');
+      if (gender === null) return;
+
+      fetch(`${WORKER_URL}/api/update-pet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id
+        },
+        body: JSON.stringify({ pet_id: petId, name, birthday, gender })
+      }).then(r => r.json()).then(d => {
+        if (d.success) {
+          alert('已更新 ✅');
+          loadPets();
+        } else {
+          alert(d.message || '更新失败');
+        }
+      });
+    }
+
+    // ===== 我的页面 =====
+    function loadProfile() {
+      document.getElementById('profile-wechat').textContent = currentUser.wechat_id;
+      document.getElementById('profile-name').textContent = currentUser.display_name || currentUser.wechat_id;
+    }
+
+    async function handleChangePassword() {
+      const oldPw = prompt('请输入当前密码（首次设置请留空）：');
+      if (oldPw === null) return;
+      const newPw = prompt('请输入新密码（至少4位）：');
+      if (!newPw || newPw.length < 4) { alert('密码至少4位'); return; }
+      const confirmPw = prompt('请再次输入新密码：');
+      if (newPw !== confirmPw) { alert('两次密码不一致'); return; }
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/change-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: currentUser.id,
+            old_password: oldPw || '',
+            new_password: newPw
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('密码修改成功 ✅');
+        } else {
+          alert(data.message || '修改失败');
+        }
+      } catch (e) {
+        alert('网络错误');
+      }
+    }
+
+    function handleLogout() {
+      if (!confirm('确认退出登录？')) return;
+      localStorage.removeItem('yotopia_user');
+      window.location.href = 'index.html';
+    }
+  </script>
+
+</body>
+</html>
