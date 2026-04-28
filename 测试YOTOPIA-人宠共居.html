@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YOTOPIA · 人宠共居</title>
+    <style>
+        :root {
+            --brown: #664B3A;
+            --cream: #DBC6B4;
+            --white: #FDFAF7;
+            --shadow: 0 4px 20px rgba(102, 75, 58, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--white);
+            color: var(--brown);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 顶部导航 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--cream);
+            margin-bottom: 24px;
+        }
+        .logo { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+        .logo span {
+            color: var(--cream);
+            background: var(--brown);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-left: 4px;
+        }
+        .header-btn {
+            background: var(--cream);
+            color: var(--brown);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .header-btn:active { transform: scale(0.96); opacity: 0.8; }
+
+        /* 欢迎卡片 */
+        .welcome {
+            background: var(--cream);
+            border-radius: 20px;
+            padding: 32px 24px;
+            margin-bottom: 28px;
+            text-align: center;
+        }
+        .welcome h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .welcome p { font-size: 14px; opacity: 0.7; line-height: 1.6; }
+
+        /* 功能入口 */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1.5px solid transparent;
+        }
+        .card:active {
+            transform: scale(0.96);
+            border-color: var(--brown);
+        }
+        .card .icon { font-size: 36px; margin-bottom: 12px; }
+        .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .card p { font-size: 12px; opacity: 0.5; }
+
+        /* 最近动态 */
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .activity-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .activity-item .avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: var(--cream);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .activity-item .info { flex: 1; }
+        .activity-item .info .name { font-size: 15px; font-weight: 600; }
+        .activity-item .info .desc { font-size: 13px; opacity: 0.6; margin-top: 2px; }
+        .activity-item .time { font-size: 12px; opacity: 0.4; flex-shrink: 0; }
+
+        .footer {
+            text-align: center;
+            padding: 32px 0 16px;
+            font-size: 12px;
+            opacity: 0.3;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== 新增：页面切换相关样式 ===== */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--brown);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 0;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .back-btn:active { opacity: 0.6; }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--cream);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--brown);
+            background: white;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--brown);
+        }
+        .submit-btn {
+            width: 100%;
+            background: var(--brown);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .submit-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+        .pet-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .pet-card .pet-avatar {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: var(--cream);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+        .pet-card .pet-info { flex: 1; }
+        .pet-card .pet-info .pet-name {
+            font-size: 17px;
+            font-weight: 600;
+        }
+        .pet-card .pet-info .pet-detail {
+            font-size: 13px;
+            opacity: 0.6;
+            margin-top: 2px;
+        }
+        .pet-card .pet-tag {
+            background: var(--cream);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            opacity: 0.5;
+        }
+        .empty-state .big-icon { font-size: 48px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+    <!-- ====== 页面1：首页 ====== -->
+    <div id="page-home" class="page active">
+        <div class="header">
+            <div class="logo">YOTOPIA <span>β</span></div>
+            <button class="header-btn" onclick="showPage('page-add')">＋ 添加家人</button>
+        </div>
+
+        <div class="welcome">
+            <h1>🐾 欢迎回家</h1>
+            <p>在这里，记录毛孩子的每一个日常<br>让陪伴，融入自然</p>
+        </div>
+
+        <div class="grid">
+            <div class="card" onclick="showPage('page-archive')">
+                <div class="icon">📋</div>
+                <h3>档案管理</h3>
+                <p>查看/编辑毛孩信息</p>
+            </div>
+            <div class="card" onclick="showPage('page-record')">
+                <div class="icon">📸</div>
+                <h3>日常记录</h3>
+                <p>照片与成长点滴</p>
+            </div>
+            <div class="card" onclick="alert('🏠 共居空间功能开发中，敬请期待！')">
+                <div class="icon">🏠</div>
+                <h3>共居空间</h3>
+                <p>人宠家居灵感</p>
+            </div>
+            <div class="card" onclick="alert('👤 个人中心功能开发中，敬请期待！')">
+                <div class="icon">👤</div>
+                <h3>我的</h3>
+                <p>账号与设置</p>
+            </div>
+        </div>
+
+        <div class="section-title">📌 最近动态</div>
+        <div id="activity-list" class="activity-list">
+            <!-- 动态列表由JS动态生成 -->
+        </div>
+
+        <div class="footer">YOTOPIA · 让陪伴，融入自然</div>
+    </div>
+
+    <!-- ====== 页面2：添加宠物 ====== -->
+    <div id="page-add" class="page">
+        <button class="back-btn" onclick="showPage('page-home')">← 返回首页</button>
+        <h2 style="font-size: 20px; margin-bottom: 20px;">🐱 添加新家人</h2>
+
+        <div class="form-group">
+            <label>毛孩子的名字</label>
+            <input id="input-name" type="text" placeholder="例如：年糕">
+        </div>
+        <div class="form-group">
+            <label>种类</label>
+            <select id="input-type">
+                <option value="猫">🐱 猫</option>
+                <option value="狗">🐶 狗</option>
+                <option value="其他">🐾 其他</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>生日（不知道可以填大概）</label>
+            <input id="input-birth" type="date">
+        </div>
+        <div class="form-group">
+            <label>一句话介绍</label>
+            <input id="input-bio" type="text" placeholder="例如：最爱吃罐头的橘猫">
+        </div>
+
+        <button class="submit-btn" onclick="addPet()">✅ 保存档案</button>
+    </div>
+
+    <!-- ====== 页面3：档案列表 ====== -->
+    <div id="page-archive" class="page">
+        <button class="back-btn" onclick="showPage('page-home')">← 返回首页</button>
+        <h2 style="font-size: 20px; margin-bottom: 20px;">📋 家人档案</h2>
+        <div id="pet-list"></div>
+    </div>
+
+    <!-- ====== 页面4：日常记录（占位） ====== -->
+    <div id="page-record" class="page">
+        <button class="back-btn" onclick="showPage('page-home')">← 返回首页</button>
+        <h2 style="font-size: 20px; margin-bottom: 20px;">📸 日常记录</h2>
+        <div class="empty-state">
+            <div class="big-icon">📸</div>
+            <p>记录功能即将上线<br>敬请期待</p>
+        </div>
+    </div>
+
+    <!-- ============ JavaScript 功能代码 ============ -->
+    <script>
+        // ----- 页面切换 -----
+        function showPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // 显示目标页面
+            document.getElementById(pageId).classList.add('active');
+            // 如果是档案页，刷新列表
+            if (pageId === 'page-archive') {
+                renderPetList();
+            }
+            if (pageId === 'page-home') {
+                renderActivity();
+            }
+        }
+
+        // ----- 数据存储 -----
+        function getPets() {
+            let data = localStorage.getItem('yotopia_pets');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function savePets(list) {
+            localStorage.setItem('yotopia_pets', JSON.stringify(list));
+        }
+
+        // ----- 添加宠物 -----
+        function addPet() {
+            let name = document.getElementById('input-name').value.trim();
+            if (!name) {
+                alert('请给毛孩子起个名字 🐾');
+                return;
+            }
+            let type = document.getElementById('input-type').value;
+            let birth = document.getElementById('input-birth').value;
+            let bio = document.getElementById('input-bio').value.trim();
+
+            let pet = {
+                id: Date.now(),
+                name: name,
+                type: type,
+                birth: birth || '未知',
+                bio: bio || '暂无介绍',
+                addedAt: new Date().toLocaleString()
+            };
+
+            let list = getPets();
+            list.push(pet);
+            savePets(list);
+
+            // 清空表单
+            document.getElementById('input-name').value = '';
+            document.getElementById('input-birth').value = '';
+            document.getElementById('input-bio').value = '';
+
+            alert(`✅ 已添加 ${name} 到家庭档案！`);
+            showPage('page-archive');
+        }
+
+        // ----- 渲染档案列表 -----
+        function renderPetList() {
+            let list = getPets();
+            let container = document.getElementById('pet-list');
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="big-icon">🐾</div>
+                        <p>还没有毛孩子档案<br>点击右上角「添加家人」开始吧</p>
+                    </div>
+                `;
+                return;
+            }
+            let html = '';
+            list.forEach(p => {
+                let emoji = p.type === '猫' ? '🐱' : p.type === '狗' ? '🐶' : '🐾';
+                html += `
+                    <div class="pet-card">
+                        <div class="pet-avatar">${emoji}</div>
+                        <div class="pet-info">
+                            <div class="pet-name">${p.name}</div>
+                            <div class="pet-detail">${p.type} · ${p.birth}</div>
+                            <div class="pet-detail">${p.bio}</div>
+                        </div>
+                        <div class="pet-tag">${p.type}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ----- 渲染最近动态 -----
+        function renderActivity() {
+            let list = getPets();
+            let container = document.getElementById('activity-list');
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="big-icon">👋</div>
+                        <p>还没有动态，快去添加第一位家人吧</p>
+                    </div>
+                `;
+                return;
+            }
+            // 取最近3位，作为"新成员加入"的动态
+            let recent = list.slice(-3).reverse();
+            let html = recent.map(p => {
+                let emoji = p.type === '猫' ? '😺' : p.type === '狗' ? '🐶' : '🐾';
+                return `
+                    <div class="activity-item">
+                        <div class="avatar">${emoji}</div>
+                        <div class="info">
+                            <div class="name">${p.name}</div>
+                            <div class="desc">🐾 正式加入YOTOPIA大家庭</div>
+                        </div>
+                        <div class="time">刚刚</div>
+                    </div>
+                `;
+            }).join('');
+            container.innerHTML = html;
+        }
+
+        // ----- 页面加载时初始化 -----
+        renderActivity();
+    </script>
+
+</body>
+</html>
