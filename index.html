@@ -1,628 +1,323 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>YOTOPIA · 人宠共居</title>
-    <!-- 引入 Supabase JS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <style>
-        :root {
-            --brown: #664B3A;
-            --cream: #DBC6B4;
-            --white: #FDFAF7;
-            --shadow: 0 4px 20px rgba(102, 75, 58, 0.1);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--white);
-            color: var(--brown);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        /* 顶部导航 */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--cream);
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .logo { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
-        .logo span {
-            color: var(--cream);
-            background: var(--brown);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-            margin-left: 4px;
-        }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .header-btn {
-            background: var(--cream);
-            color: var(--brown);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .header-btn:active { transform: scale(0.96); opacity: 0.8; }
-        .header-btn.primary {
-            background: var(--brown);
-            color: white;
-        }
-        .header-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .user-status-text {
-            font-size: 12px;
-            color: var(--brown);
-            opacity: 0.6;
-            white-space: nowrap;
-        }
-
-        /* 欢迎卡片 */
-        .welcome {
-            background: var(--cream);
-            border-radius: 20px;
-            padding: 32px 24px;
-            margin-bottom: 28px;
-            text-align: center;
-        }
-        .welcome h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-        .welcome p { font-size: 14px; opacity: 0.7; line-height: 1.6; }
-
-        /* 功能入口 */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px 16px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1.5px solid transparent;
-        }
-        .card:active {
-            transform: scale(0.96);
-            border-color: var(--brown);
-        }
-        .card .icon { font-size: 36px; margin-bottom: 12px; }
-        .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-        .card p { font-size: 12px; opacity: 0.5; }
-
-        /* 最近动态 */
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .activity-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .activity-item {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .activity-item .avatar {
-            width: 44px; height: 44px;
-            border-radius: 50%;
-            background: var(--cream);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-        }
-        .activity-item .info { flex: 1; }
-        .activity-item .info .name { font-size: 15px; font-weight: 600; }
-        .activity-item .info .desc { font-size: 13px; opacity: 0.6; margin-top: 2px; }
-        .activity-item .time { font-size: 12px; opacity: 0.4; flex-shrink: 0; }
-
-        .footer {
-            text-align: center;
-            padding: 32px 0 16px;
-            font-size: 12px;
-            opacity: 0.3;
-            letter-spacing: 0.5px;
-        }
-
-        /* ===== 页面切换相关样式 ===== */
-        .page { display: none; }
-        .page.active { display: block; }
-
-        .back-btn {
-            background: none;
-            border: none;
-            color: var(--brown);
-            font-size: 16px;
-            cursor: pointer;
-            padding: 4px 0;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .back-btn:active { opacity: 0.6; }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 6px;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1.5px solid var(--cream);
-            border-radius: 12px;
-            font-size: 15px;
-            color: var(--brown);
-            background: white;
-            outline: none;
-        }
-        .form-group input:focus {
-            border-color: var(--brown);
-        }
-        .submit-btn {
-            width: 100%;
-            background: var(--brown);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .submit-btn:active { transform: scale(0.97); opacity: 0.9; }
-
-        .pet-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 12px;
-        }
-        .pet-card .pet-avatar {
-            width: 56px; height: 56px;
-            border-radius: 50%;
-            background: var(--cream);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            flex-shrink: 0;
-        }
-        .pet-card .pet-info { flex: 1; }
-        .pet-card .pet-info .pet-name {
-            font-size: 17px;
-            font-weight: 600;
-        }
-        .pet-card .pet-info .pet-detail {
-            font-size: 13px;
-            opacity: 0.6;
-            margin-top: 2px;
-        }
-        .pet-card .pet-tag {
-            background: var(--cream);
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-            opacity: 0.5;
-        }
-        .empty-state .big-icon { font-size: 48px; margin-bottom: 12px; }
-
-        /* 加载动画 */
-        .loading-spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid var(--cream);
-            border-top-color: var(--brown);
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            vertical-align: middle;
-            margin-right: 4px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>YOTOPIA · 登录</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+      background: #F5EDE8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .login-wrap {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 32px 24px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 8px 40px rgba(102,75,58,0.10);
+    }
+    /* ---- Logo ---- */
+    .logo-area {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .logo-img {
+      max-width: 140px;
+      display: block;
+      margin: 0 auto 8px;
+    }
+    .logo-area .slogan {
+      font-size: 12px;
+      color: #C4B5A9;
+      margin-top: 2px;
+      letter-spacing: 1px;
+    }
+    /* ---- 输入框 ---- */
+    .input-group { margin-bottom: 16px; }
+    .input-group label {
+      display: block; font-size: 13px; font-weight: 500; color: #9A8A7E; margin-bottom: 6px;
+    }
+    .input-group input {
+      width: 100%; padding: 14px 16px; border: 2px solid #E8DDD6;
+      border-radius: 12px; font-size: 15px; outline: none;
+      background: #FAF8F6; transition: border-color 0.2s;
+    }
+    .input-group input:focus { border-color: #664B3A; background: #fff; }
+    .input-group input::placeholder { color: #C4B5A9; }
+    /* ---- 提示文字 ---- */
+    .hint {
+      text-align: center;
+      font-size: 12px;
+      color: #C4B5A9;
+      margin: 8px 0 4px;
+      line-height: 1.6;
+    }
+    /* ---- 按钮 ---- */
+    .btn-login {
+      width: 100%; padding: 15px; background: #664B3A; color: #DBC6B4;
+      border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+      cursor: pointer; margin-top: 12px; transition: opacity 0.2s;
+    }
+    .btn-login:active { opacity: 0.85; }
+    .btn-login:disabled { background: #DBC6B4; color: #9A8A7E; cursor: not-allowed; }
+    /* ---- 消息提示 ---- */
+    .msg {
+      padding: 10px 14px; border-radius: 10px; font-size: 13px;
+      margin-bottom: 12px; display: none; text-align: center;
+    }
+    .msg.error { display: block; background: #FFF0EE; color: #C0392B; }
+    .msg.success { display: block; background: #E8F5E9; color: #27AE60; }
+    .msg.info { display: block; background: #FFF8E1; color: #8D6E2B; }
+    /* ---- 管理员入口 ---- */
+    .admin-entry {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #F0E8E2;
+    }
+    .admin-entry a {
+      color: #DBC6B4;
+      font-size: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      letter-spacing: 1px;
+    }
+    .admin-entry a:hover { color: #664B3A; }
+    /* ---- 弹窗 ---- */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #fff; border-radius: 20px; padding: 32px 28px;
+      width: 90%; max-width: 340px;
+    }
+    .modal h3 { color: #664B3A; text-align: center; margin-bottom: 20px; font-size: 18px; }
+    .modal input {
+      width: 100%; padding: 12px 14px; border: 2px solid #E8DDD6;
+      border-radius: 10px; font-size: 15px; margin-bottom: 12px; outline: none;
+    }
+    .modal input:focus { border-color: #664B3A; }
+    .modal .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+    .modal .btn-row button {
+      flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 15px; cursor: pointer;
+    }
+    .modal .btn-primary { background: #664B3A; color: #DBC6B4; }
+    .modal .btn-secondary { background: #F0E8E2; color: #664B3A; }
+    .modal .modal-msg {
+      padding: 8px 12px; border-radius: 8px; font-size: 12px;
+      margin-bottom: 12px; display: none; text-align: center;
+    }
+    .modal .modal-msg.error { display: block; background: #FFF0EE; color: #C0392B; }
+    .modal .modal-msg.success { display: block; background: #E8F5E9; color: #27AE60; }
+    /* ---- 底部 ---- */
+    .brand-footer {
+      text-align: center; margin-top: 18px;
+      font-size: 11px; color: #DBC6B4; letter-spacing: 1px;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- ====== 页面1：首页 ====== -->
-    <div id="page-home" class="page active">
-        <div class="header">
-            <div class="logo">YOTOPIA <span>β</span></div>
-            <div class="header-right">
-                <span id="user-status-label" class="user-status-text"></span>
-                <button id="wechat-login-btn" class="header-btn primary" style="display:none;">微信登录</button>
-                <button id="signout-btn" class="header-btn" style="display:none;">退出</button>
-                <button class="header-btn" onclick="showPage('page-add')">＋ 添加家人</button>
-            </div>
-        </div>
-
-        <div class="welcome">
-            <h1 id="welcome-title">🐾 欢迎回家</h1>
-            <p id="welcome-sub">在这里，记录毛孩子的每一个日常<br>让陪伴，融入自然</p>
-        </div>
-
-        <div class="grid">
-            <div class="card" onclick="showPage('page-archive')">
-                <div class="icon">📋</div>
-                <h3>档案管理</h3>
-                <p>查看/编辑毛孩信息</p>
-            </div>
-            <div class="card" onclick="showPage('page-record')">
-                <div class="icon">📸</div>
-                <h3>日常记录</h3>
-                <p>照片与成长点滴</p>
-            </div>
-            <div class="card" onclick="alert('🏠 共居空间功能开发中，敬请期待！')">
-                <div class="icon">🏠</div>
-                <h3>共居空间</h3>
-                <p>人宠家居灵感</p>
-            </div>
-            <div class="card" onclick="alert('👤 个人中心功能开发中，敬请期待！')">
-                <div class="icon">👤</div>
-                <h3>我的</h3>
-                <p>账号与设置</p>
-            </div>
-        </div>
-
-        <div class="section-title">📌 最近动态</div>
-        <div id="activity-list" class="activity-list">
-            <!-- 动态列表由JS动态生成 -->
-        </div>
-
-        <div class="footer">YOTOPIA · 让陪伴，融入自然</div>
+  <div class="login-wrap">
+    <!-- Logo 图片 -->
+    <div class="logo-area">
+      <img class="logo-img" src="https://fmyuscjbteiekhiaimgv.supabase.co/storage/v1/object/public/yotopia-assets/indexlogo.png" alt="YOTOPIA">
+      <div class="slogan"> </div>
     </div>
 
-    <!-- ====== 页面2：添加宠物 ====== -->
-    <div id="page-add" class="page">
-        <button class="back-btn" onclick="showPage('page-home')">← 返回首页</button>
-        <h2 style="font-size: 20px; margin-bottom: 20px;">🐱 添加新家人</h2>
+    <div id="msg-login" class="msg"></div>
 
-        <div class="form-group">
-            <label>毛孩子的名字</label>
-            <input id="input-name" type="text" placeholder="例如：年糕">
-        </div>
-        <div class="form-group">
-            <label>种类</label>
-            <select id="input-type">
-                <option value="猫">🐱 猫</option>
-                <option value="狗">🐶 狗</option>
-                <option value="其他">🐾 其他</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>生日（不知道可以填大概）</label>
-            <input id="input-birth" type="date">
-        </div>
-        <div class="form-group">
-            <label>一句话介绍</label>
-            <input id="input-bio" type="text" placeholder="例如：最爱吃罐头的橘猫">
-        </div>
-
-        <button class="submit-btn" onclick="addPet()">✅ 保存档案</button>
+    <!-- 微信号 -->
+    <div class="input-group">
+      <label>微信号</label>
+      <input type="text" id="input-wechat" placeholder="输入微信号登录" autocomplete="username">
     </div>
 
-    <!-- ====== 页面3：档案列表 ====== -->
-    <div id="page-archive" class="page">
-        <button class="back-btn" onclick="showPage('page-home')">← 返回首页</button>
-        <h2 style="font-size: 20px; margin-bottom: 20px;">📋 家人档案</h2>
-        <div id="pet-list"></div>
+    <!-- 密码 -->
+    <div class="input-group">
+      <label>密码</label>
+      <input type="password" id="input-password" placeholder="输入密码" autocomplete="current-password">
     </div>
 
-    <!-- ====== 页面4：日常记录（占位） ====== -->
-    <div id="page-record" class="page">
-        <button class="back-btn" onclick="showPage('page-home')">← 返回首页</button>
-        <h2 style="font-size: 20px; margin-bottom: 20px;">📸 日常记录</h2>
-        <div class="empty-state">
-            <div class="big-icon">📸</div>
-            <p>记录功能即将上线<br>敬请期待</p>
-        </div>
+    <!-- 提示文字 -->
+    <div class="hint">首次登录，无需密码，登录后可进行修改</div>
+
+    <!-- 登录按钮 -->
+    <button class="btn-login" id="btn-login" onclick="handleLogin()">登 录</button>
+
+    <!-- 管理员入口 -->
+    <div class="admin-entry">
+      <a onclick="openAdminModal()">🔒 管理员登录</a>
     </div>
 
-    <!-- ============ JavaScript ============ -->
-    <script>
-        // ========== 配置区：请替换为您自己的信息 ==========
-        const SUPABASE_URL = 'https://fmyuscjbteiekhiaimgv.supabase.co';    // ← 替换
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZteXVzY2pidGVpZWtoaWFpbWd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTA4MTQsImV4cCI6MjA5Mjg2NjgxNH0.LLuKE-oOqSH3ZnEq7yO8q1rjRMPSk3FO6cmDc2AiD9k';          // ← 替换
-        const WECHAT_APP_ID = 'wx77beb47bf9654f67';                        // ← 替换
-        const WORKER_URL = 'https://delicate-dew-63c6.andy99jjc.workers.dev';  // ← 您的Worker地址
-        // ================================================
+    <!-- 品牌底标 -->
+    <div class="brand-footer">🐾 YOTOPIA ｜ Your Utopia</div>
+  </div>
 
-        // ----- 初始化 Supabase -----
-        const { createClient } = supabase;
-        const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <!-- ====== 管理员登录弹窗 ====== -->
+  <div class="modal-overlay" id="admin-modal">
+    <div class="modal">
+      <h3>🔒 管理员登录</h3>
+      <div id="admin-msg" class="modal-msg"></div>
+      <input type="text" id="admin-user" placeholder="管理员账号">
+      <input type="password" id="admin-pass" placeholder="密码">
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeAdminModal()">取消</button>
+        <button class="btn-primary" onclick="handleAdminLogin()">登录</button>
+      </div>
+    </div>
+  </div>
 
-        // ----- DOM 元素引用 -----
-        const loginBtn = document.getElementById('wechat-login-btn');
-        const signoutBtn = document.getElementById('signout-btn');
-        const userStatusLabel = document.getElementById('user-status-label');
-        const welcomeTitle = document.getElementById('welcome-title');
-        const welcomeSub = document.getElementById('welcome-sub');
+  <script>
+    const WORKER_URL = 'https://delicate-dew-63c6.andy99jjc.workers.dev';
 
-        // ========== 微信登录流程 ==========
+    // ====== 用户登录 ======
+    async function handleLogin() {
+      const wechat_id = document.getElementById('input-wechat').value.trim();
+      const password = document.getElementById('input-password').value.trim();
+      const msg = document.getElementById('msg-login');
+      const btn = document.getElementById('btn-login');
 
-        // 点击微信登录按钮 → 跳转到微信授权页
-        loginBtn.addEventListener('click', () => {
-            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-            const authUrl = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${WECHAT_APP_ID}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`;
-            window.location.href = authUrl;
+      if (!wechat_id) { showMsg(msg, '请输入微信号', 'error'); return; }
+
+      btn.disabled = true;
+      btn.textContent = '登录中...';
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ wechat_id, password })
         });
+        const data = await res.json();
 
-        // 点击退出按钮
-        signoutBtn.addEventListener('click', async () => {
-            await sb.auth.signOut();
-            updateUI(null);
+        if (data.success && data.needs_setup) {
+          const newPw = prompt('首次登录，请设置你的密码（至少4位）：');
+          if (!newPw || newPw.length < 4) {
+            showMsg(msg, '密码至少4位，请重试', 'error');
+            btn.disabled = false;
+            btn.textContent = '登 录';
+            return;
+          }
+
+          const pwRes = await fetch(`${WORKER_URL}/api/change-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: data.user.id, old_password: '', new_password: newPw })
+          });
+          const pwData = await pwRes.json();
+
+          if (pwData.success) {
+            showMsg(msg, '密码设置成功 ✅ 正在登录...', 'success');
+            setTimeout(async () => {
+              const finalLogin = await fetch(`${WORKER_URL}/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ wechat_id, password: newPw })
+              });
+              const finalData = await finalLogin.json();
+              if (finalData.success) {
+                localStorage.setItem('yotopia_user', JSON.stringify(finalData.user));
+                window.location.href = 'main.html';
+              }
+            }, 800);
+          } else {
+            showMsg(msg, pwData.message || '设置失败', 'error');
+            btn.disabled = false;
+            btn.textContent = '登 录';
+          }
+          return;
+        }
+
+        if (data.success) {
+          localStorage.setItem('yotopia_user', JSON.stringify(data.user));
+          window.location.href = 'main.html';
+        } else {
+          showMsg(msg, data.message || '登录失败', 'error');
+          btn.disabled = false;
+          btn.textContent = '登 录';
+        }
+      } catch (e) {
+        showMsg(msg, '网络错误，请稍后再试', 'error');
+        btn.disabled = false;
+        btn.textContent = '登 录';
+      }
+    }
+
+    // ====== 管理员弹窗 ======
+    function openAdminModal() {
+      document.getElementById('admin-modal').classList.add('show');
+      document.getElementById('admin-user').value = '';
+      document.getElementById('admin-pass').value = '';
+      document.getElementById('admin-msg').className = 'modal-msg';
+    }
+
+    function closeAdminModal() {
+      document.getElementById('admin-modal').classList.remove('show');
+    }
+
+    async function handleAdminLogin() {
+      const username = document.getElementById('admin-user').value.trim();
+      const password = document.getElementById('admin-pass').value.trim();
+      const msg = document.getElementById('admin-msg');
+
+      if (!username || !password) { showModalMsg(msg, '请填写完整', 'error'); return; }
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
         });
+        const data = await res.json();
 
-        // ========== 页面初始化 ==========
-        async function init() {
-            // 检查 URL 中是否有微信返回的 code
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get('code');
-
-            if (code) {
-                // 显示登录中状态
-                userStatusLabel.innerHTML = '<span class="loading-spinner"></span>登录中...';
-                loginBtn.style.display = 'none';
-                signoutBtn.style.display = 'none';
-
-                try {
-                    // 1. 调用 Worker，用 code 换 openid
-                    const res = await fetch(WORKER_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code }),
-                    });
-
-                    if (!res.ok) {
-                        const errData = await res.json().catch(() => ({}));
-                        throw new Error(errData.error || `请求失败 (${res.status})`);
-                    }
-
-                    const data = await res.json();
-                    const openid = data.openid;
-
-                    // 2. 用 openid 构造唯一邮箱和密码
-                    const email = openid + '@yotopia.wechat';
-                    const password = openid + '_yotopia_secret';
-
-                    // 3. 尝试登录
-                    const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({
-                        email,
-                        password,
-                    });
-
-                    if (signInError) {
-                        if (signInError.message.includes('Invalid login credentials')) {
-                            // 用户不存在 → 先注册
-                            const { error: signUpError } = await sb.auth.signUp({
-                                email,
-                                password,
-                            });
-                            if (signUpError) throw signUpError;
-
-                            // 注册后等待一下再登录（Supabase需要一点时间）
-                            await new Promise(r => setTimeout(r, 500));
-
-                            const { data: loginAfterSignup, error: loginError } = await sb.auth.signInWithPassword({
-                                email,
-                                password,
-                            });
-                            if (loginError) throw loginError;
-                        } else {
-                            throw signInError;
-                        }
-                    }
-
-                    // 4. 清除 URL 中的 code 参数，防止刷新重复登录
-                    window.history.replaceState({}, document.title, window.location.pathname);
-
-                    // 5. 获取最新 session 更新 UI
-                    const { data: { session } } = await sb.auth.getSession();
-                    updateUI(session);
-
-                } catch (error) {
-                    userStatusLabel.textContent = '❌ 登录失败: ' + error.message;
-                    console.error('登录错误:', error);
-                    // 显示登录按钮，让用户可以重试
-                    loginBtn.style.display = 'inline-block';
-                }
-            } else {
-                // 正常加载，检查当前登录状态
-                const { data: { session } } = await sb.auth.getSession();
-                updateUI(session);
-            }
+        if (data.success) {
+          localStorage.setItem('yotopia_admin', 'true');
+          window.location.href = 'admin.html';
+        } else {
+          showModalMsg(msg, data.message || '登录失败', 'error');
         }
+      } catch (e) {
+        showModalMsg(msg, '网络错误', 'error');
+      }
+    }
 
-        // ========== 更新界面 ==========
-        function updateUI(session) {
-            if (session) {
-                // 已登录
-                const userId = session.user.id.substring(0, 8);
-                userStatusLabel.textContent = `✓ ${userId}...`;
-                loginBtn.style.display = 'none';
-                signoutBtn.style.display = 'inline-block';
-                welcomeTitle.textContent = '🐾 欢迎回来';
-                welcomeSub.innerHTML = '记录毛孩子的每一个日常<br>让陪伴，融入自然';
-            } else {
-                // 未登录
-                userStatusLabel.textContent = '';
-                loginBtn.style.display = 'inline-block';
-                signoutBtn.style.display = 'none';
-                welcomeTitle.textContent = '🐾 欢迎回家';
-                welcomeSub.innerHTML = '请先登录，开始记录毛孩子的日常';
-            }
-        }
+    // ====== 工具 ======
+    function showMsg(el, text, type) {
+      el.textContent = text;
+      el.className = 'msg ' + type;
+      setTimeout(() => { el.className = 'msg'; }, 5000);
+    }
 
-        // ========== 以下保持您原有的所有功能不变 ==========
+    function showModalMsg(el, text, type) {
+      el.textContent = text;
+      el.className = 'modal-msg ' + type;
+      setTimeout(() => { el.className = 'modal-msg'; }, 4000);
+    }
 
-        // ----- 页面切换 -----
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            if (pageId === 'page-archive') {
-                renderPetList();
-            }
-            if (pageId === 'page-home') {
-                renderActivity();
-            }
-        }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const modalOpen = document.getElementById('admin-modal').classList.contains('show');
+        if (modalOpen) handleAdminLogin();
+        else handleLogin();
+      }
+    });
 
-        // ----- 数据存储（localStorage）-----
-        function getPets() {
-            let data = localStorage.getItem('yotopia_pets');
-            return data ? JSON.parse(data) : [];
-        }
-
-        function savePets(list) {
-            localStorage.setItem('yotopia_pets', JSON.stringify(list));
-        }
-
-        // ----- 添加宠物 -----
-        function addPet() {
-            let name = document.getElementById('input-name').value.trim();
-            if (!name) {
-                alert('请给毛孩子起个名字 🐾');
-                return;
-            }
-            let type = document.getElementById('input-type').value;
-            let birth = document.getElementById('input-birth').value;
-            let bio = document.getElementById('input-bio').value.trim();
-
-            let pet = {
-                id: Date.now(),
-                name: name,
-                type: type,
-                birth: birth || '未知',
-                bio: bio || '暂无介绍',
-                addedAt: new Date().toLocaleString()
-            };
-
-            let list = getPets();
-            list.push(pet);
-            savePets(list);
-
-            document.getElementById('input-name').value = '';
-            document.getElementById('input-birth').value = '';
-            document.getElementById('input-bio').value = '';
-
-            alert(`✅ 已添加 ${name} 到家庭档案！`);
-            showPage('page-archive');
-        }
-
-        // ----- 渲染档案列表 -----
-        function renderPetList() {
-            let list = getPets();
-            let container = document.getElementById('pet-list');
-            if (list.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="big-icon">🐾</div>
-                        <p>还没有毛孩子档案<br>点击右上角「添加家人」开始吧</p>
-                    </div>
-                `;
-                return;
-            }
-            let html = '';
-            list.forEach(p => {
-                let emoji = p.type === '猫' ? '🐱' : p.type === '狗' ? '🐶' : '🐾';
-                html += `
-                    <div class="pet-card">
-                        <div class="pet-avatar">${emoji}</div>
-                        <div class="pet-info">
-                            <div class="pet-name">${p.name}</div>
-                            <div class="pet-detail">${p.type} · ${p.birth}</div>
-                            <div class="pet-detail">${p.bio}</div>
-                        </div>
-                        <div class="pet-tag">${p.type}</div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        // ----- 渲染最近动态 -----
-        function renderActivity() {
-            let list = getPets();
-            let container = document.getElementById('activity-list');
-            if (list.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="big-icon">👋</div>
-                        <p>还没有动态，快去添加第一位家人吧</p>
-                    </div>
-                `;
-                return;
-            }
-            let recent = list.slice(-3).reverse();
-            let html = recent.map(p => {
-                let emoji = p.type === '猫' ? '😺' : p.type === '狗' ? '🐶' : '🐾';
-                return `
-                    <div class="activity-item">
-                        <div class="avatar">${emoji}</div>
-                        <div class="info">
-                            <div class="name">${p.name}</div>
-                            <div class="desc">🐾 正式加入YOTOPIA大家庭</div>
-                        </div>
-                        <div class="time">刚刚</div>
-                    </div>
-                `;
-            }).join('');
-            container.innerHTML = html;
-        }
-
-        // ========== 启动 ==========
-        init();
-        renderActivity();
-    </script>
+    (function() {
+      if (localStorage.getItem('yotopia_user')) {
+        window.location.href = 'main.html';
+      }
+    })();
+  </script>
 
 </body>
 </html>
