@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>YOTOPIA · 人宠共居</title>
+    <!-- 引入 Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
         :root {
             --brown: #664B3A;
@@ -28,6 +30,8 @@
             padding: 16px 0;
             border-bottom: 1px solid var(--cream);
             margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .logo { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
         .logo span {
@@ -37,6 +41,12 @@
             border-radius: 4px;
             font-size: 14px;
             margin-left: 4px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         .header-btn {
             background: var(--cream);
@@ -48,8 +58,23 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
         }
         .header-btn:active { transform: scale(0.96); opacity: 0.8; }
+        .header-btn.primary {
+            background: var(--brown);
+            color: white;
+        }
+        .header-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .user-status-text {
+            font-size: 12px;
+            color: var(--brown);
+            opacity: 0.6;
+            white-space: nowrap;
+        }
 
         /* 欢迎卡片 */
         .welcome {
@@ -133,7 +158,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* ===== 新增：页面切换相关样式 ===== */
+        /* ===== 页面切换相关样式 ===== */
         .page { display: none; }
         .page.active { display: block; }
 
@@ -230,6 +255,20 @@
             opacity: 0.5;
         }
         .empty-state .big-icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* 加载动画 */
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--cream);
+            border-top-color: var(--brown);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -238,12 +277,17 @@
     <div id="page-home" class="page active">
         <div class="header">
             <div class="logo">YOTOPIA <span>β</span></div>
-            <button class="header-btn" onclick="showPage('page-add')">＋ 添加家人</button>
+            <div class="header-right">
+                <span id="user-status-label" class="user-status-text"></span>
+                <button id="wechat-login-btn" class="header-btn primary" style="display:none;">微信登录</button>
+                <button id="signout-btn" class="header-btn" style="display:none;">退出</button>
+                <button class="header-btn" onclick="showPage('page-add')">＋ 添加家人</button>
+            </div>
         </div>
 
         <div class="welcome">
-            <h1>🐾 欢迎回家</h1>
-            <p>在这里，记录毛孩子的每一个日常<br>让陪伴，融入自然</p>
+            <h1 id="welcome-title">🐾 欢迎回家</h1>
+            <p id="welcome-sub">在这里，记录毛孩子的每一个日常<br>让陪伴，融入自然</p>
         </div>
 
         <div class="grid">
@@ -323,15 +367,147 @@
         </div>
     </div>
 
-    <!-- ============ JavaScript 功能代码 ============ -->
+    <!-- ============ JavaScript ============ -->
     <script>
+        // ========== 配置区：请替换为您自己的信息 ==========
+        const SUPABASE_URL = 'https://fmyuscjbteiekhiaimgv.supabase.co';    // ← 替换
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZteXVzY2pidGVpZWtoaWFpbWd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTA4MTQsImV4cCI6MjA5Mjg2NjgxNH0.LLuKE-oOqSH3ZnEq7yO8q1rjRMPSk3FO6cmDc2AiD9k';          // ← 替换
+        const WECHAT_APP_ID = 'wx77beb47bf9654f67';                        // ← 替换
+        const WORKER_URL = 'https://delicate-dew-63c6.andy99jjc.workers.dev';  // ← 您的Worker地址
+        // ================================================
+
+        // ----- 初始化 Supabase -----
+        const { createClient } = supabase;
+        const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ----- DOM 元素引用 -----
+        const loginBtn = document.getElementById('wechat-login-btn');
+        const signoutBtn = document.getElementById('signout-btn');
+        const userStatusLabel = document.getElementById('user-status-label');
+        const welcomeTitle = document.getElementById('welcome-title');
+        const welcomeSub = document.getElementById('welcome-sub');
+
+        // ========== 微信登录流程 ==========
+
+        // 点击微信登录按钮 → 跳转到微信授权页
+        loginBtn.addEventListener('click', () => {
+            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+            const authUrl = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${WECHAT_APP_ID}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`;
+            window.location.href = authUrl;
+        });
+
+        // 点击退出按钮
+        signoutBtn.addEventListener('click', async () => {
+            await sb.auth.signOut();
+            updateUI(null);
+        });
+
+        // ========== 页面初始化 ==========
+        async function init() {
+            // 检查 URL 中是否有微信返回的 code
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+
+            if (code) {
+                // 显示登录中状态
+                userStatusLabel.innerHTML = '<span class="loading-spinner"></span>登录中...';
+                loginBtn.style.display = 'none';
+                signoutBtn.style.display = 'none';
+
+                try {
+                    // 1. 调用 Worker，用 code 换 openid
+                    const res = await fetch(WORKER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code }),
+                    });
+
+                    if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.error || `请求失败 (${res.status})`);
+                    }
+
+                    const data = await res.json();
+                    const openid = data.openid;
+
+                    // 2. 用 openid 构造唯一邮箱和密码
+                    const email = openid + '@yotopia.wechat';
+                    const password = openid + '_yotopia_secret';
+
+                    // 3. 尝试登录
+                    const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({
+                        email,
+                        password,
+                    });
+
+                    if (signInError) {
+                        if (signInError.message.includes('Invalid login credentials')) {
+                            // 用户不存在 → 先注册
+                            const { error: signUpError } = await sb.auth.signUp({
+                                email,
+                                password,
+                            });
+                            if (signUpError) throw signUpError;
+
+                            // 注册后等待一下再登录（Supabase需要一点时间）
+                            await new Promise(r => setTimeout(r, 500));
+
+                            const { data: loginAfterSignup, error: loginError } = await sb.auth.signInWithPassword({
+                                email,
+                                password,
+                            });
+                            if (loginError) throw loginError;
+                        } else {
+                            throw signInError;
+                        }
+                    }
+
+                    // 4. 清除 URL 中的 code 参数，防止刷新重复登录
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                    // 5. 获取最新 session 更新 UI
+                    const { data: { session } } = await sb.auth.getSession();
+                    updateUI(session);
+
+                } catch (error) {
+                    userStatusLabel.textContent = '❌ 登录失败: ' + error.message;
+                    console.error('登录错误:', error);
+                    // 显示登录按钮，让用户可以重试
+                    loginBtn.style.display = 'inline-block';
+                }
+            } else {
+                // 正常加载，检查当前登录状态
+                const { data: { session } } = await sb.auth.getSession();
+                updateUI(session);
+            }
+        }
+
+        // ========== 更新界面 ==========
+        function updateUI(session) {
+            if (session) {
+                // 已登录
+                const userId = session.user.id.substring(0, 8);
+                userStatusLabel.textContent = `✓ ${userId}...`;
+                loginBtn.style.display = 'none';
+                signoutBtn.style.display = 'inline-block';
+                welcomeTitle.textContent = '🐾 欢迎回来';
+                welcomeSub.innerHTML = '记录毛孩子的每一个日常<br>让陪伴，融入自然';
+            } else {
+                // 未登录
+                userStatusLabel.textContent = '';
+                loginBtn.style.display = 'inline-block';
+                signoutBtn.style.display = 'none';
+                welcomeTitle.textContent = '🐾 欢迎回家';
+                welcomeSub.innerHTML = '请先登录，开始记录毛孩子的日常';
+            }
+        }
+
+        // ========== 以下保持您原有的所有功能不变 ==========
+
         // ----- 页面切换 -----
         function showPage(pageId) {
-            // 隐藏所有页面
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            // 显示目标页面
             document.getElementById(pageId).classList.add('active');
-            // 如果是档案页，刷新列表
             if (pageId === 'page-archive') {
                 renderPetList();
             }
@@ -340,7 +516,7 @@
             }
         }
 
-        // ----- 数据存储 -----
+        // ----- 数据存储（localStorage）-----
         function getPets() {
             let data = localStorage.getItem('yotopia_pets');
             return data ? JSON.parse(data) : [];
@@ -374,7 +550,6 @@
             list.push(pet);
             savePets(list);
 
-            // 清空表单
             document.getElementById('input-name').value = '';
             document.getElementById('input-birth').value = '';
             document.getElementById('input-bio').value = '';
@@ -427,7 +602,6 @@
                 `;
                 return;
             }
-            // 取最近3位，作为"新成员加入"的动态
             let recent = list.slice(-3).reverse();
             let html = recent.map(p => {
                 let emoji = p.type === '猫' ? '😺' : p.type === '狗' ? '🐶' : '🐾';
@@ -445,7 +619,8 @@
             container.innerHTML = html;
         }
 
-        // ----- 页面加载时初始化 -----
+        // ========== 启动 ==========
+        init();
         renderActivity();
     </script>
 
