@@ -13,7 +13,6 @@
       color: #664B3A;
     }
 
-    /* ===== 管理员登录 ===== */
     .admin-login-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -101,7 +100,6 @@
       color: #664B3A;
     }
 
-    /* ===== 主界面布局 ===== */
     .admin-layout {
       display: none;
       min-height: 100vh;
@@ -110,7 +108,6 @@
       display: flex;
     }
 
-    /* ===== 侧边栏 ===== */
     .sidebar {
       width: 220px;
       background: #fff;
@@ -170,7 +167,6 @@
       background: #FFF0EE;
     }
 
-    /* ===== 主内容区 ===== */
     .main-content {
       flex: 1;
       padding: 28px 32px;
@@ -219,7 +215,6 @@
       color: #664B3A;
     }
 
-    /* ===== 统计卡片 ===== */
     .stats-row {
       display: flex;
       gap: 16px;
@@ -243,7 +238,6 @@
       margin-top: 4px;
     }
 
-    /* ===== 表格 ===== */
     .table-container {
       background: #fff;
       border-radius: 16px;
@@ -307,7 +301,6 @@
       font-size: 14px;
     }
 
-    /* ===== 搜索框 ===== */
     .search-bar {
       display: flex;
       gap: 12px;
@@ -329,7 +322,6 @@
       border-color: #DBC6B4;
     }
 
-    /* ===== Modal ===== */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -419,7 +411,6 @@
       color: #fff;
     }
 
-    /* ===== 宠物列表（内嵌） ===== */
     .pet-tag {
       display: inline-block;
       background: #F0E8E2;
@@ -434,7 +425,6 @@
       font-size: 13px;
     }
 
-    /* ===== Toast ===== */
     .toast {
       position: fixed;
       top: 24px;
@@ -455,7 +445,6 @@
       transform: translateY(0);
     }
 
-    /* ===== 登录日志 ===== */
     .log-entry {
       display: flex;
       justify-content: space-between;
@@ -472,7 +461,6 @@
       font-size: 12px;
     }
 
-    /* ===== 卡片上传区 ===== */
     .card-upload-area {
       background: #fff;
       border-radius: 16px;
@@ -526,7 +514,15 @@
       outline: none;
     }
 
-    /* ===== 响应式 ===== */
+    /* 反馈卡片样式 */
+    .feedback-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(102,75,58,0.04);
+    }
+
     @media (max-width: 768px) {
       .sidebar {
         width: 60px;
@@ -562,7 +558,6 @@
 </head>
 <body>
 
-  <!-- ===== 管理员登录弹层 ===== -->
   <div class="admin-login-overlay" id="adminLoginOverlay">
     <div class="admin-login-box">
       <div class="lock-icon">🔒</div>
@@ -576,13 +571,9 @@
     </div>
   </div>
 
-  <!-- ===== Toast 提示 ===== -->
   <div class="toast" id="toast"></div>
 
-  <!-- ===== 主界面布局 ===== -->
   <div class="admin-layout" id="adminLayout">
-
-    <!-- 侧边栏 -->
     <div class="sidebar">
       <div class="brand">
         <h1>🐾 YOTOPIA</h1>
@@ -604,6 +595,9 @@
       <div class="nav-item" onclick="switchSection('logs')">
         <span class="nav-icon">📋</span> 登录日志
       </div>
+      <div class="nav-item" onclick="switchSection('feedback')">
+        <span class="nav-icon">💬</span> 用户反馈
+      </div>
       <div class="nav-item" onclick="switchSection('settings')">
         <span class="nav-icon">⚙️</span> 设置
       </div>
@@ -614,10 +608,8 @@
       </div>
     </div>
 
-    <!-- 主内容区 -->
     <div class="main-content">
 
-      <!-- ===== 概览 ===== -->
       <div class="page-section active" id="section-dashboard">
         <div class="section-header">
           <h2>📊 概览</h2>
@@ -641,17 +633,14 @@
         </div>
       </div>
 
-      <!-- ===== 用户管理 ===== -->
       <div class="page-section" id="section-users">
         <div class="section-header">
           <h2>👤 用户管理</h2>
           <button class="action-btn" onclick="openAddUserModal()">➕ 添加用户</button>
         </div>
-
         <div class="search-bar">
           <input type="text" id="userSearch" placeholder="搜索微信号或昵称..." oninput="filterUsers()">
         </div>
-
         <div class="table-container">
           <table>
             <thead>
@@ -670,17 +659,14 @@
         </div>
       </div>
 
-      <!-- ===== 宠物管理 ===== -->
       <div class="page-section" id="section-pets">
         <div class="section-header">
           <h2>🐱 宠物管理</h2>
           <button class="action-btn" onclick="openAddPetModal()">➕ 添加宠物</button>
         </div>
-
         <div class="search-bar">
           <input type="text" id="petSearch" placeholder="搜索宠物名或主人微信号..." oninput="filterPets()">
         </div>
-
         <div class="table-container">
           <table>
             <thead>
@@ -700,7 +686,6 @@
         </div>
       </div>
 
-      <!-- ===== 专属卡片 ===== -->
       <div class="page-section" id="section-cards">
         <div class="section-header">
           <h2>🎴 专属卡片管理</h2>
@@ -731,7 +716,6 @@
         </div>
       </div>
 
-      <!-- ===== 登录日志 ===== -->
       <div class="page-section" id="section-logs">
         <div class="section-header">
           <h2>📋 登录日志</h2>
@@ -753,7 +737,17 @@
         </div>
       </div>
 
-      <!-- ===== 设置 ===== -->
+      <!-- ===== 🆕 用户反馈页面 ===== -->
+      <div class="page-section" id="section-feedback">
+        <div class="section-header">
+          <h2>💬 用户反馈</h2>
+          <button class="action-btn secondary" onclick="loadFeedbacks()">🔄 刷新</button>
+        </div>
+        <div id="feedback-list">
+          <div style="text-align:center;padding:40px;color:#C4B5A9;">加载中...</div>
+        </div>
+      </div>
+
       <div class="page-section" id="section-settings">
         <div class="section-header">
           <h2>⚙️ 设置</h2>
@@ -791,7 +785,6 @@
     </div>
   </div>
 
-  <!-- ===== Modal 通用 ===== -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box" id="modalBox">
       <h3 id="modalTitle">标题</h3>
@@ -811,7 +804,6 @@
     let selectedCardFile = null;
     let modalCallback = null;
 
-    // ===== 初始化 =====
     (function() {
       if (adminToken) {
         showAdminPanel();
@@ -820,13 +812,11 @@
         document.getElementById('adminLoginOverlay').classList.remove('hidden');
       }
 
-      // 回车登录
       document.getElementById('adminPassword').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') adminLogin();
       });
     })();
 
-    // ===== 管理员登录 =====
     async function adminLogin() {
       const username = document.getElementById('adminUsername').value.trim();
       const password = document.getElementById('adminPassword').value.trim();
@@ -871,30 +861,27 @@
       btn.textContent = '登 录';
     }
 
-    // ===== 显示主面板 =====
     function showAdminPanel() {
       document.getElementById('adminLayout').classList.add('active');
     }
 
-    // ===== 页面切换 =====
     function switchSection(section) {
       document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
       document.getElementById('section-' + section).classList.add('active');
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       const navItems = document.querySelectorAll('.nav-item');
-      const sectionOrder = ['dashboard','users','pets','cards','logs','settings'];
+      const sectionOrder = ['dashboard','users','pets','cards','logs','feedback','settings'];
       const idx = sectionOrder.indexOf(section);
       if (idx >= 0) navItems[idx].classList.add('active');
 
-      // 按需加载
       if (section === 'users') loadUsers();
       else if (section === 'pets') loadPets();
       else if (section === 'cards') loadCardSelects();
       else if (section === 'logs') loadLogs();
+      else if (section === 'feedback') loadFeedbacks();
       else if (section === 'dashboard') loadDashboard();
     }
 
-    // ===== Toast =====
     function showToast(msg, isError) {
       const el = document.getElementById('toast');
       el.textContent = msg;
@@ -903,7 +890,6 @@
       setTimeout(() => el.classList.remove('show'), 2500);
     }
 
-    // ===== Modal =====
     function openModal(title, bodyHtml, confirmText, callback, isDanger) {
       document.getElementById('modalTitle').textContent = title;
       document.getElementById('modalBody').innerHTML = bodyHtml;
@@ -923,12 +909,10 @@
       closeModal();
     }
 
-    // 点击遮罩关闭
     document.getElementById('modalOverlay').addEventListener('click', function(e) {
       if (e.target === this) closeModal();
     });
 
-    // ===== 概览 =====
     async function loadDashboard() {
       try {
         const res = await fetch(`${WORKER_URL}/api/admin/stats`, {
@@ -946,7 +930,6 @@
       document.getElementById('dashboardTime').textContent = '最后更新：' + new Date().toLocaleString('zh-CN');
     }
 
-    // ===== 用户管理 =====
     async function loadUsers() {
       try {
         const res = await fetch(`${WORKER_URL}/api/admin/users`, {
@@ -1082,21 +1065,18 @@
             showToast(data.message || '删除失败', true);
           }
         } catch (e) { showToast('网络错误', true); }
-      }, true); // isDanger
+      }, true);
     }
 
     function viewUserPets(userId) {
-      // 切换到宠物页并筛选
       document.getElementById('petSearch').value = '';
       switchSection('pets');
       setTimeout(() => {
-        // 过滤出该用户的宠物
         const filtered = cachedPets.filter(p => p.user_id === userId);
         renderPets(filtered);
       }, 300);
     }
 
-    // ===== 宠物管理 =====
     async function loadPets() {
       try {
         const res = await fetch(`${WORKER_URL}/api/admin/pets`, {
@@ -1145,7 +1125,6 @@
     }
 
     function openAddPetModal() {
-      // 先加载用户列表用于下拉
       const userOptions = cachedUsers.length > 0
         ? cachedUsers.map(u => `<option value="${u.id}">${u.wechat_id}${u.display_name ? ' ('+u.display_name+')' : ''}</option>`).join('')
         : '<option value="">暂无用户</option>';
@@ -1218,7 +1197,6 @@
       }, true);
     }
 
-    // ===== 专属卡片管理 =====
     async function loadCardSelects() {
       try {
         const res = await fetch(`${WORKER_URL}/api/admin/users`, {
@@ -1232,7 +1210,6 @@
             data.users.map(u => `<option value="${u.id}">${u.wechat_id}${u.display_name ? ' ('+u.display_name+')' : ''}</option>`).join('');
           select.onchange = onCardUserChange;
         }
-        // 加载已上传卡片列表
         loadUploadedCards();
       } catch (e) {
         console.error(e);
@@ -1338,7 +1315,6 @@
       }
     }
 
-    // ===== 登录日志 =====
     async function loadLogs() {
       try {
         const res = await fetch(`${WORKER_URL}/api/admin/logs`, {
@@ -1362,7 +1338,40 @@
       }
     }
 
-    // ===== 修改管理员密码 =====
+    // ===== 🆕 加载用户反馈 =====
+    async function loadFeedbacks() {
+      try {
+        const res = await fetch(`${WORKER_URL}/api/admin/feedbacks`, {
+          headers: { 'Authorization': 'Bearer ' + adminToken }
+        });
+        const data = await res.json();
+        const container = document.getElementById('feedback-list');
+        if (data.success && data.feedbacks && data.feedbacks.length > 0) {
+          container.innerHTML = data.feedbacks.map(f => {
+            const isSatisfied = f.satisfaction === 'satisfied';
+            return `
+              <div class="feedback-card">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                  <span style="font-weight:600;color:#664B3A;">${f.wechat_id || f.user_id}</span>
+                  <span style="font-size:12px;color:#9A8A7E;">${new Date(f.created_at).toLocaleString('zh-CN')}</span>
+                </div>
+                <div style="margin-bottom:6px;">
+                  <span style="font-size:13px;color:#9A8A7E;">满意度：</span>
+                  <span style="font-size:14px;font-weight:600;color:${isSatisfied ? '#27AE60' : '#C0392B'};">${isSatisfied ? '✅ 满意' : '🔄 不满意'}</span>
+                </div>
+                ${f.comment ? `<div style="font-size:14px;color:#664B3A;margin-bottom:6px;">📝 ${f.comment}</div>` : ''}
+                ${f.new_photo_url ? `<div><img src="${f.new_photo_url}" style="max-width:120px;border-radius:8px;margin-top:4px;"></div>` : ''}
+              </div>
+            `;
+          }).join('');
+        } else {
+          container.innerHTML = '<div style="text-align:center;padding:40px;color:#C4B5A9;">暂无用户反馈</div>';
+        }
+      } catch (e) {
+        document.getElementById('feedback-list').innerHTML = '<div style="text-align:center;padding:40px;color:#C0392B;">加载失败</div>';
+      }
+    }
+
     async function changeAdminPassword() {
       const oldPw = document.getElementById('adminOldPw').value;
       const newPw = document.getElementById('adminNewPw').value;
@@ -1392,7 +1401,6 @@
       }
     }
 
-    // ===== 退出登录 =====
     function adminLogout() {
       if (!confirm('确认退出管理后台？')) return;
       localStorage.removeItem('yotopia_admin_token');
