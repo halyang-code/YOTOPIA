@@ -340,6 +340,93 @@
       transition: opacity 0.2s;
     }
     .modal-btn-cancel:active { opacity: 0.7; }
+
+    /* 🆕 全局确认弹窗样式 */
+    .yoto-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .yoto-modal-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px 24px 24px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.12);
+      animation: modalPop 0.2s ease;
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.92); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .yoto-modal-box .yoto-modal-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #664B3A;
+      margin-bottom: 8px;
+    }
+    .yoto-modal-box .yoto-modal-body {
+      font-size: 14px;
+      color: #664B3A;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .yoto-modal-box .yoto-modal-input-box {
+      margin-bottom: 16px;
+    }
+    .yoto-modal-box .yoto-modal-input-box input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #F0E8E2;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #664B3A;
+      background: #F9F5F2;
+      outline: none;
+      font-family: inherit;
+    }
+    .yoto-modal-box .yoto-modal-input-box input:focus {
+      border-color: #DBC6B4;
+    }
+    .yoto-modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .yoto-modal-actions .btn-cancel {
+      flex: 1;
+      padding: 12px;
+      background: #F0E8E2;
+      color: #9A8A7E;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .yoto-modal-actions .btn-cancel:active { opacity: 0.7; }
+    .yoto-modal-actions .btn-confirm {
+      flex: 1;
+      padding: 12px;
+      background: #664B3A;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .yoto-modal-actions .btn-confirm:active { opacity: 0.8; }
+    .yoto-modal-actions .btn-confirm.danger {
+      background: #C0392B;
+    }
   </style>
 </head>
 <body>
@@ -381,7 +468,7 @@
         <span class="label">修改密码</span>
         <button onclick="handleChangePassword()">修改 →</button>
       </div>
-      <button class="logout-btn" onclick="handleLogout()">退出登录</button>
+      <button class="logout-btn" onclick="showConfirm('确认退出登录？', handleLogout)">退出登录</button>
     </div>
   </div>
 
@@ -420,6 +507,132 @@
       loadPets();
     })();
 
+    // ============================================================
+    // 🆕 全局统一确认弹窗 — 取消左 / 确认右
+    // ============================================================
+    function showConfirm(message, onConfirm, onCancel, confirmText, isDanger) {
+      var old = document.getElementById('yoto-global-confirm');
+      if (old) old.remove();
+
+      var overlay = document.createElement('div');
+      overlay.id = 'yoto-global-confirm';
+      overlay.className = 'yoto-modal-overlay';
+
+      var safeMsg = (message || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
+
+      overlay.innerHTML = '\
+        <div class="yoto-modal-box">\
+          <div class="yoto-modal-title">⚠️ 确认</div>\
+          <div class="yoto-modal-body">' + safeMsg + '</div>\
+          <div class="yoto-modal-actions">\
+            <button class="btn-cancel" id="yoto-confirm-cancel">取消</button>\
+            <button class="btn-confirm' + (isDanger ? ' danger' : '') + '" id="yoto-confirm-ok">' + (confirmText || '确认') + '</button>\
+          </div>\
+        </div>';
+
+      document.body.appendChild(overlay);
+
+      document.getElementById('yoto-confirm-cancel').addEventListener('click', function() {
+        overlay.remove();
+        if (typeof onConfirm === 'function') {
+          // 不执行确认
+        }
+        if (typeof onCancel === 'function') onCancel();
+      });
+
+      document.getElementById('yoto-confirm-ok').addEventListener('click', function() {
+        overlay.remove();
+        if (typeof onConfirm === 'function') onConfirm();
+      });
+
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+          overlay.remove();
+          if (typeof onCancel === 'function') onCancel();
+        }
+      });
+    }
+
+    // 🆕 带输入框的弹窗（用于修改密码）
+    function showPromptModal(title, fields, onConfirm) {
+      var old = document.getElementById('yoto-prompt-modal');
+      if (old) old.remove();
+
+      var overlay = document.createElement('div');
+      overlay.id = 'yoto-prompt-modal';
+      overlay.className = 'yoto-modal-overlay';
+
+      var inputsHtml = '';
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        var inputType = f.type || 'text';
+        var placeholder = f.placeholder || '';
+        var id = 'yoto-prompt-input-' + i;
+        inputsHtml += '\
+          <div class="yoto-modal-input-box">\
+            <input type="' + inputType + '" id="' + id + '" placeholder="' + placeholder + '" style="' + (f.password ? '' : '') + '">\
+          </div>';
+      }
+
+      overlay.innerHTML = '\
+        <div class="yoto-modal-box">\
+          <div class="yoto-modal-title">' + title + '</div>\
+          <div class="yoto-modal-body" id="yoto-prompt-error" style="color:#C0392B;display:none;"></div>\
+          ' + inputsHtml + '\
+          <div class="yoto-modal-actions">\
+            <button class="btn-cancel" id="yoto-prompt-cancel">取消</button>\
+            <button class="btn-confirm" id="yoto-prompt-ok">确认</button>\
+          </div>\
+        </div>';
+
+      document.body.appendChild(overlay);
+
+      // 第一个输入框自动聚焦
+      setTimeout(function() {
+        var firstInput = document.getElementById('yoto-prompt-input-0');
+        if (firstInput) firstInput.focus();
+      }, 150);
+
+      // 回车键提交
+      overlay.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          document.getElementById('yoto-prompt-ok').click();
+        }
+      });
+
+      document.getElementById('yoto-prompt-cancel').addEventListener('click', function() {
+        overlay.remove();
+      });
+
+      document.getElementById('yoto-prompt-ok').addEventListener('click', function() {
+        var values = [];
+        for (var i = 0; i < fields.length; i++) {
+          values.push(document.getElementById('yoto-prompt-input-' + i).value);
+        }
+        if (typeof onConfirm === 'function') {
+          var result = onConfirm(values);
+          // 如果返回 false 表示验证不通过，不关闭弹窗
+          if (result === false) return;
+        }
+        overlay.remove();
+      });
+
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+      });
+    }
+
+    function showPromptError(msg) {
+      var el = document.getElementById('yoto-prompt-error');
+      if (el) {
+        el.textContent = msg;
+        el.style.display = 'block';
+      }
+    }
+
+    // ============================================================
+    // 页面切换
+    // ============================================================
     function switchTab(tab) {
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       document.getElementById('page-' + tab).classList.add('active');
@@ -506,7 +719,7 @@
         `;
       }).join('');
 
-      // 宠物详情页（含删除按钮）
+      // 宠物详情页
       let detailHtml = '';
       userPets.forEach(p => {
         const pPhoto = p.photo_url
@@ -526,9 +739,9 @@
               </div>
             </div>
             <div class="pet-actions">
-              <button onclick="uploadPhoto('${p.id}')">📸 上传照片</button>
+              <button onclick="showUploadPhotoConfirm('${p.id}')">📸 上传照片</button>
               <button onclick="editPet('${p.id}')">✏️ 编辑资料</button>
-              <button onclick="deleteMyPet('${p.id}')" style="background:#FFF0EE;color:#C0392B;">🗑️ 删除</button>
+              <button onclick="showDeletePetConfirm('${p.id}')" style="background:#FFF0EE;color:#C0392B;">🗑️ 删除</button>
             </div>
           </div>
         `;
@@ -541,7 +754,127 @@
       detailContainer.innerHTML = detailHtml;
     }
 
-    // ===== 🆕 弹窗添加宠物（修复日期格式Bug + 提升体验） =====
+    // ============================================================
+    // 🆕 上传照片 — 先弹自定义确认（取消左 / 确认右）
+    // ============================================================
+    function showUploadPhotoConfirm(petId) {
+      var pet = userPets.find(function(p) { return p.id === petId; });
+      var petName = pet ? (pet.name || '宠物') : '宠物';
+
+      showConfirm(
+        '📸 为「' + petName + '」上传照片\n\n⚠️ 建议使用 1MB 以内的清晰照片\n照片过大可能导致上传速度变慢',
+        function() {
+          actuallyUploadPhoto(petId);
+        },
+        null,
+        '选择照片',
+        false
+      );
+    }
+
+    function actuallyUploadPhoto(petId) {
+      var input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+
+      input.onchange = async function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+
+        var sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+
+        if (file.size > 5 * 1024 * 1024) {
+          showConfirm(
+            '⚠️ 照片大小约 ' + sizeMB + 'MB\n\n超过 5MB 可能会上传很慢，是否继续？',
+            function() { doUpload(petId, file); },
+            null,
+            '继续上传',
+            false
+          );
+          return;
+        } else if (file.size > 2 * 1024 * 1024) {
+          showConfirm(
+            '⏳ 照片大小约 ' + sizeMB + 'MB\n\n超过 2MB 上传速度可能较慢，是否继续？',
+            function() { doUpload(petId, file); },
+            null,
+            '继续上传',
+            false
+          );
+          return;
+        }
+
+        doUpload(petId, file);
+      };
+
+      input.click();
+    }
+
+    async function doUpload(petId, file) {
+      var formData = new FormData();
+      formData.append('pet_id', petId);
+      formData.append('photo', file);
+
+      try {
+        var btn = document.querySelector('button[onclick*="showUploadPhotoConfirm"]');
+        if (btn) { btn.textContent = '⏳ 上传中...'; btn.disabled = true; }
+
+        var res = await fetch(WORKER_URL + '/api/upload-photo', {
+          method: 'POST',
+          headers: { 'X-User-Id': currentUser.id },
+          body: formData
+        });
+        var data = await res.json();
+        if (data.success) {
+          showConfirm('📸 照片上传成功！', function() { loadPets(); }, null, '好的', false);
+        } else {
+          showConfirm('上传失败：' + (data.message || '请重试'), null, null, '知道了', false);
+        }
+      } catch (e) {
+        showConfirm('网络错误，请稍后重试', null, null, '知道了', false);
+      } finally {
+        if (btn) { btn.textContent = '📸 上传照片'; btn.disabled = false; }
+      }
+    }
+
+    // ============================================================
+    // 🆕 删除宠物 — 自定义确认弹窗
+    // ============================================================
+    function showDeletePetConfirm(petId) {
+      var pet = userPets.find(function(p) { return p.id === petId; });
+      var petName = pet ? (pet.name || '这只宠物') : '这只宠物';
+
+      showConfirm(
+        '⚠️ 确定要删除「' + petName + '」吗？\n\n删除后不可恢复！',
+        function() {
+          actuallyDeletePet(petId);
+        },
+        null,
+        '确认删除',
+        true
+      );
+    }
+
+    async function actuallyDeletePet(petId) {
+      try {
+        var res = await fetch(WORKER_URL + '/api/delete-pet', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUser.id },
+          body: JSON.stringify({ pet_id: petId })
+        });
+        var data = await res.json();
+        if (data.success) {
+          showConfirm('🗑️ 已删除', function() { loadPets(); }, null, '好的', false);
+        } else {
+          showConfirm(data.message || '删除失败', null, null, '知道了', false);
+        }
+      } catch (e) {
+        showConfirm('网络错误，请稍后重试', null, null, '知道了', false);
+      }
+    }
+
+    // ============================================================
+    // 添加宠物弹窗（已有，确认在右、取消在左 ✅）
+    // ============================================================
     window.addPet = async function() {
       var old = document.getElementById('add-pet-modal');
       if (old) old.remove();
@@ -632,8 +965,7 @@
           var d = await res.json();
           if (d.success) {
             overlay.remove();
-            alert('🐱 ' + name + ' 添加成功！');
-            loadPets();
+            showConfirm('🐱 ' + name + ' 添加成功！', function() { loadPets(); }, null, '好的', false);
           } else {
             errorEl.textContent = d.message || '添加失败，请重试';
             errorEl.style.display = 'block';
@@ -648,7 +980,9 @@
       });
     };
 
-    // ===== 🆕 弹窗编辑宠物 =====
+    // ============================================================
+    // 编辑宠物弹窗（已有，确认在右、取消在左 ✅）
+    // ============================================================
     function editPet(petId) {
       var pet = userPets.find(function(p) { return p.id === petId; });
       if (!pet) return;
@@ -738,8 +1072,7 @@
           var d = await res.json();
           if (d.success) {
             overlay.remove();
-            alert('✅ ' + name + ' 的资料已更新！');
-            loadPets();
+            showConfirm('✅ ' + name + ' 的资料已更新！', function() { loadPets(); }, null, '好的', false);
           } else {
             errorEl.textContent = d.message || '更新失败，请重试';
             errorEl.style.display = 'block';
@@ -754,81 +1087,9 @@
       });
     }
 
-    // ===== 🆕 用户端删除宠物 =====
-    function deleteMyPet(petId) {
-      var pet = userPets.find(function(p) { return p.id === petId; });
-      var petName = pet ? (pet.name || '这只宠物') : '这只宠物';
-
-      if (!confirm('⚠️ 确定要删除 ' + petName + ' 吗？\n\n删除后不可恢复！')) return;
-
-      fetch(WORKER_URL + '/api/delete-pet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUser.id },
-        body: JSON.stringify({ pet_id: petId })
-      }).then(function(r) { return r.json(); }).then(function(d) {
-        if (d.success) {
-          alert('🗑️ ' + petName + ' 已删除');
-          loadPets();
-        } else {
-          alert(d.message || '删除失败');
-        }
-      }).catch(function() {
-        alert('网络错误，请稍后重试');
-      });
-    }
-
-    // ===== 🆕 上传照片 + 大小提示 =====
-    function uploadPhoto(petId) {
-      var pet = userPets.find(function(p) { return p.id === petId; });
-      var petName = pet ? pet.name : '';
-
-      if (!confirm('📸 为' + (petName || '宠物') + '上传照片\n\n⚠️ 建议使用 1MB 以内的清晰照片\n   照片过大可能导致上传速度变慢')) return;
-
-      var input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-
-      input.onchange = async function(e) {
-        var file = e.target.files[0];
-        if (!file) return;
-
-        var sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-        if (file.size > 5 * 1024 * 1024) {
-          if (!confirm('⚠️ 照片大小约 ' + sizeMB + 'MB\n\n超过 5MB 可能会上传很慢，是否继续？')) return;
-        } else if (file.size > 2 * 1024 * 1024) {
-          if (!confirm('⏳ 照片大小约 ' + sizeMB + 'MB\n\n超过 2MB 上传速度可能较慢，是否继续？')) return;
-        }
-
-        var formData = new FormData();
-        formData.append('pet_id', petId);
-        formData.append('photo', file);
-
-        try {
-          var btn = document.querySelector('button[onclick*="uploadPhoto"]');
-          if (btn) { btn.textContent = '⏳ 上传中...'; btn.disabled = true; }
-
-          var res = await fetch(WORKER_URL + '/api/upload-photo', {
-            method: 'POST',
-            headers: { 'X-User-Id': currentUser.id },
-            body: formData
-          });
-          var data = await res.json();
-          if (data.success) {
-            alert('📸 照片上传成功！');
-            loadPets();
-          } else {
-            alert(data.message || '上传失败');
-          }
-        } catch (e) {
-          alert('网络错误，请稍后重试');
-        } finally {
-          if (btn) { btn.textContent = '📸 上传照片'; btn.disabled = false; }
-        }
-      };
-
-      input.click();
-    }
-
+    // ============================================================
+    // 卡片相关
+    // ============================================================
     async function loadMyCard() {
       const container = document.getElementById('card-content-area');
       container.innerHTML = '<div style="text-align:center;padding:40px;color:#C4B5A9;">加载中...</div>';
@@ -885,7 +1146,7 @@
           if (!cardId) return;
 
           if (target.classList.contains('card-btn-satisfied')) {
-            submitSatisfied(cardId);
+            showSatisfiedConfirm(cardId);
           } else if (target.classList.contains('card-btn-unsatisfied')) {
             openUnsatisfiedModal(cardId);
           }
@@ -896,11 +1157,18 @@
       }
     }
 
-    async function submitSatisfied(cardId) {
-      if (!confirm('📝 确定提交「满意」反馈？\n\n提交后不能修改，请确认卡片效果满意后再提交。')) {
-        return;
-      }
+    // 🆕 满意提交 — 自定义确认弹窗
+    function showSatisfiedConfirm(cardId) {
+      showConfirm(
+        '📝 确定提交「满意」反馈？\n\n提交后不能修改，请确认卡片效果满意后再提交。',
+        function() { submitSatisfied(cardId); },
+        null,
+        '确认提交',
+        false
+      );
+    }
 
+    async function submitSatisfied(cardId) {
       const formData = new FormData();
       formData.append('user_id', currentUser.id);
       formData.append('card_id', cardId);
@@ -915,16 +1183,16 @@
         const data = await res.json();
         if (data.success) {
           addFeedbackCardId(cardId);
-          alert('🎉 反馈已提交！感谢你的确认 ✅');
-          loadMyCard();
+          showConfirm('🎉 反馈已提交！感谢你的确认 ✅', function() { loadMyCard(); }, null, '好的', false);
         } else {
-          alert('提交失败：' + (data.message || '请重试'));
+          showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
         }
       } catch (e) {
-        alert('网络错误，请稍后重试');
+        showConfirm('网络错误，请稍后重试', null, null, '知道了', false);
       }
     }
 
+    // 不满意弹窗（已有，取消左、确认右 ✅）
     function openUnsatisfiedModal(cardId) {
       var oldModal = document.getElementById('feedback-modal');
       if (oldModal) oldModal.remove();
@@ -995,7 +1263,7 @@
       var photoFile = photoInput ? photoInput.files[0] : null;
 
       if (!comment && !photoFile) {
-        alert('请填写需要修改的文字说明，或上传一张新照片');
+        showConfirm('请填写需要修改的文字说明，或上传一张新照片', null, null, '知道了', false);
         return;
       }
 
@@ -1020,15 +1288,14 @@
         var data = await res.json();
         if (data.success) {
           addFeedbackCardId(cardId);
-          alert('📩 反馈已提交！管理员会尽快修改 ✅');
           var modal = document.getElementById('feedback-modal');
           if (modal) modal.remove();
-          loadMyCard();
+          showConfirm('📩 反馈已提交！管理员会尽快修改 ✅', function() { loadMyCard(); }, null, '好的', false);
         } else {
-          alert('提交失败：' + (data.message || '请重试'));
+          showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
         }
       } catch (e) {
-        alert('网络错误，请稍后重试');
+        showConfirm('网络错误，请稍后重试', null, null, '知道了', false);
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -1037,22 +1304,44 @@
       }
     }
 
-    // ===== 我的页面 =====
-    function loadProfile() {
-      document.getElementById('profile-wechat').textContent = currentUser.wechat_id;
-      document.getElementById('profile-name').textContent = currentUser.display_name || currentUser.wechat_id;
+    // ============================================================
+    // 🆕 修改密码 — 自定义输入弹窗
+    // ============================================================
+    function handleChangePassword() {
+      showPromptModal(
+        '🔑 修改密码',
+        [
+          { type: 'password', placeholder: '当前密码（首次设置请留空）' },
+          { type: 'password', placeholder: '新密码（至少4位）' },
+          { type: 'password', placeholder: '再次输入新密码' }
+        ],
+        function(values) {
+          var oldPw = values[0] || '';
+          var newPw = values[1] || '';
+          var confirmPw = values[2] || '';
+
+          if (!newPw || newPw.length < 4) {
+            showPromptError('密码至少4位');
+            return false;
+          }
+          if (newPw !== confirmPw) {
+            showPromptError('两次密码不一致');
+            return false;
+          }
+
+          // 关闭弹窗后执行异步操作
+          setTimeout(function() {
+            doChangePassword(oldPw, newPw);
+          }, 100);
+
+          return true;
+        }
+      );
     }
 
-    async function handleChangePassword() {
-      const oldPw = prompt('请输入当前密码（首次设置请留空）：');
-      if (oldPw === null) return;
-      const newPw = prompt('请输入新密码（至少4位）：');
-      if (!newPw || newPw.length < 4) { alert('密码至少4位'); return; }
-      const confirmPw = prompt('请再次输入新密码：');
-      if (newPw !== confirmPw) { alert('两次密码不一致'); return; }
-
+    async function doChangePassword(oldPw, newPw) {
       try {
-        const res = await fetch(`${WORKER_URL}/api/change-password`, {
+        var res = await fetch(WORKER_URL + '/api/change-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1061,21 +1350,31 @@
             new_password: newPw
           })
         });
-        const data = await res.json();
+        var data = await res.json();
         if (data.success) {
-          alert('密码修改成功 ✅');
+          showConfirm('密码修改成功 ✅', null, null, '好的', false);
         } else {
-          alert(data.message || '修改失败');
+          showConfirm(data.message || '修改失败', null, null, '知道了', false);
         }
       } catch (e) {
-        alert('网络错误');
+        showConfirm('网络错误', null, null, '知道了', false);
       }
     }
 
+    // ============================================================
+    // 🆕 退出登录 — 自定义确认弹窗
+    // ============================================================
     function handleLogout() {
-      if (!confirm('确认退出登录？')) return;
       localStorage.removeItem('yotopia_user');
       window.location.href = 'index.html';
+    }
+
+    // ============================================================
+    // 我的页面
+    // ============================================================
+    function loadProfile() {
+      document.getElementById('profile-wechat').textContent = currentUser.wechat_id;
+      document.getElementById('profile-name').textContent = currentUser.display_name || currentUser.wechat_id;
     }
   </script>
 </body>
