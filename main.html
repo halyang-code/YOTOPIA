@@ -904,8 +904,9 @@
           \
           <div style="margin-bottom:16px;">\
             <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">生日</label>\
-            <input type="text" id="modal-pet-birthday" class="modal-input" placeholder="如：2024-01-15 或留空">\
+            <input type="date" id="modal-pet-birthday" class="modal-input" style="font-family:inherit;">\
             <p style="font-size:11px;color:#DBC6B4;margin-top:4px;">不记得日期可以留空 ✨</p>\
+          </div>\
           </div>\
           \
           <div style="margin-bottom:24px;">\
@@ -1015,7 +1016,7 @@
           \
           <div style="margin-bottom:16px;">\
             <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">生日</label>\
-            <input type="text" id="edit-pet-birthday" class="modal-input" placeholder="如：2024-01-15 或留空" value="' + (pet.birthday || '') + '">\
+            <input type="date" id="edit-pet-birthday" class="modal-input" style="font-family:inherit;" value="' + (pet.birthday || '') + '">\
             <p style="font-size:11px;color:#DBC6B4;margin-top:4px;">不记得日期可以留空 ✨</p>\
           </div>\
           \
