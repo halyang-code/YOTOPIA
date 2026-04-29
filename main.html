@@ -278,9 +278,8 @@
     .add-pet-btn button:active {
       opacity: 0.8;
     }
-  
 
-    /* 🆕 弹窗样式 */
+    /* 🆕 弹窗通用样式 */
     .modal-input {
       width: 100%;
       padding: 12px 14px;
@@ -341,8 +340,6 @@
       transition: opacity 0.2s;
     }
     .modal-btn-cancel:active { opacity: 0.7; }
-
-    
   </style>
 </head>
 <body>
@@ -509,7 +506,7 @@
         `;
       }).join('');
 
-      // 宠物详情页
+      // 宠物详情页（含删除按钮）
       let detailHtml = '';
       userPets.forEach(p => {
         const pPhoto = p.photo_url
@@ -531,6 +528,7 @@
             <div class="pet-actions">
               <button onclick="uploadPhoto('${p.id}')">📸 上传照片</button>
               <button onclick="editPet('${p.id}')">✏️ 编辑资料</button>
+              <button onclick="deleteMyPet('${p.id}')" style="background:#FFF0EE;color:#C0392B;">🗑️ 删除</button>
             </div>
           </div>
         `;
@@ -545,7 +543,6 @@
 
     // ===== 🆕 弹窗添加宠物（修复日期格式Bug + 提升体验） =====
     window.addPet = async function() {
-      // 如果已有弹窗先关掉
       var old = document.getElementById('add-pet-modal');
       if (old) old.remove();
 
@@ -588,34 +585,28 @@
 
       document.body.appendChild(overlay);
 
-      // 自动聚焦名字输入框
       setTimeout(function() {
         document.getElementById('modal-pet-name').focus();
       }, 150);
 
-      // 输入框按回车触发提交
       document.getElementById('modal-pet-name').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') document.getElementById('btn-confirm-addpet').click();
       });
 
-      // 点击遮罩关闭
       overlay.addEventListener('click', function(e) {
         if (e.target === overlay) overlay.remove();
       });
 
-      // 取消按钮
       document.getElementById('btn-cancel-addpet').addEventListener('click', function() {
         overlay.remove();
       });
 
-      // 提交按钮
       document.getElementById('btn-confirm-addpet').addEventListener('click', async function() {
         var name = document.getElementById('modal-pet-name').value.trim();
         var birthday = document.getElementById('modal-pet-birthday').value;
         var gender = document.getElementById('modal-pet-gender').value;
         var errorEl = document.getElementById('modal-pet-error');
 
-        // 前端校验
         if (!name) {
           errorEl.textContent = '请输入宠物名字 🐱';
           errorEl.style.display = 'block';
@@ -657,61 +648,185 @@
       });
     };
 
+    // ===== 🆕 弹窗编辑宠物 =====
+    function editPet(petId) {
+      var pet = userPets.find(function(p) { return p.id === petId; });
+      if (!pet) return;
+
+      var old = document.getElementById('edit-pet-modal');
+      if (old) old.remove();
+
+      var overlay = document.createElement('div');
+      overlay.id = 'edit-pet-modal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
+
+      overlay.innerHTML = '\
+        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.12);">\
+          <h3 style="font-size:18px;font-weight:600;color:#664B3A;margin-bottom:4px;">✏️ 编辑宠物</h3>\
+          <p style="font-size:13px;color:#9A8A7E;margin-bottom:20px;">修改 ' + (pet.name || '宠物') + ' 的资料</p>\
+          \
+          <div style="margin-bottom:16px;">\
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">宠物名字 *</label>\
+            <input type="text" id="edit-pet-name" class="modal-input" value="' + (pet.name || '') + '" placeholder="如：小咪">\
+          </div>\
+          \
+          <div style="margin-bottom:16px;">\
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">生日</label>\
+            <input type="date" id="edit-pet-birthday" class="modal-input" style="font-family:inherit;" value="' + (pet.birthday || '') + '">\
+            <p style="font-size:11px;color:#DBC6B4;margin-top:4px;">不记得日期可以留空 ✨</p>\
+          </div>\
+          \
+          <div style="margin-bottom:24px;">\
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">性别</label>\
+            <select id="edit-pet-gender" class="modal-select">\
+              <option value="">未知</option>\
+              <option value="male" ' + (pet.gender === 'male' ? 'selected' : '') + '>♂ 男孩</option>\
+              <option value="female" ' + (pet.gender === 'female' ? 'selected' : '') + '>♀ 女孩</option>\
+            </select>\
+          </div>\
+          \
+          <div id="edit-pet-error" style="color:#C0392B;font-size:13px;margin-bottom:8px;display:none;"></div>\
+          \
+          <div style="display:flex;gap:10px;">\
+            <button id="btn-cancel-editpet" class="modal-btn-cancel">取消</button>\
+            <button id="btn-confirm-editpet" class="modal-btn-primary">保存修改</button>\
+          </div>\
+        </div>';
+
+      document.body.appendChild(overlay);
+
+      setTimeout(function() {
+        document.getElementById('edit-pet-name').focus();
+      }, 150);
+
+      document.getElementById('edit-pet-name').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('btn-confirm-editpet').click();
+      });
+
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+      });
+
+      document.getElementById('btn-cancel-editpet').addEventListener('click', function() {
+        overlay.remove();
+      });
+
+      document.getElementById('btn-confirm-editpet').addEventListener('click', async function() {
+        var name = document.getElementById('edit-pet-name').value.trim();
+        var birthday = document.getElementById('edit-pet-birthday').value;
+        var gender = document.getElementById('edit-pet-gender').value;
+        var errorEl = document.getElementById('edit-pet-error');
+
+        if (!name) {
+          errorEl.textContent = '请输入宠物名字 🐱';
+          errorEl.style.display = 'block';
+          document.getElementById('edit-pet-name').focus();
+          return;
+        }
+        errorEl.style.display = 'none';
+
+        var btn = document.getElementById('btn-confirm-editpet');
+        btn.disabled = true;
+        btn.textContent = '保存中...';
+
+        try {
+          var res = await fetch(WORKER_URL + '/api/update-pet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUser.id },
+            body: JSON.stringify({ pet_id: petId, name: name, birthday: birthday || '', gender: gender || '' })
+          });
+          var d = await res.json();
+          if (d.success) {
+            overlay.remove();
+            alert('✅ ' + name + ' 的资料已更新！');
+            loadPets();
+          } else {
+            errorEl.textContent = d.message || '更新失败，请重试';
+            errorEl.style.display = 'block';
+          }
+        } catch (e) {
+          errorEl.textContent = '网络错误，请稍后重试';
+          errorEl.style.display = 'block';
+        }
+
+        btn.disabled = false;
+        btn.textContent = '保存修改';
+      });
+    }
+
+    // ===== 🆕 用户端删除宠物 =====
+    function deleteMyPet(petId) {
+      var pet = userPets.find(function(p) { return p.id === petId; });
+      var petName = pet ? (pet.name || '这只宠物') : '这只宠物';
+
+      if (!confirm('⚠️ 确定要删除 ' + petName + ' 吗？\n\n删除后不可恢复！')) return;
+
+      fetch(WORKER_URL + '/api/delete-pet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUser.id },
+        body: JSON.stringify({ pet_id: petId })
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.success) {
+          alert('🗑️ ' + petName + ' 已删除');
+          loadPets();
+        } else {
+          alert(d.message || '删除失败');
+        }
+      }).catch(function() {
+        alert('网络错误，请稍后重试');
+      });
+    }
+
+    // ===== 🆕 上传照片 + 大小提示 =====
     function uploadPhoto(petId) {
-      const input = document.createElement('input');
+      var pet = userPets.find(function(p) { return p.id === petId; });
+      var petName = pet ? pet.name : '';
+
+      if (!confirm('📸 为' + (petName || '宠物') + '上传照片\n\n⚠️ 建议使用 1MB 以内的清晰照片\n   照片过大可能导致上传速度变慢')) return;
+
+      var input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
+
       input.onchange = async function(e) {
-        const file = e.target.files[0];
+        var file = e.target.files[0];
         if (!file) return;
-        const formData = new FormData();
+
+        var sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        if (file.size > 5 * 1024 * 1024) {
+          if (!confirm('⚠️ 照片大小约 ' + sizeMB + 'MB\n\n超过 5MB 可能会上传很慢，是否继续？')) return;
+        } else if (file.size > 2 * 1024 * 1024) {
+          if (!confirm('⏳ 照片大小约 ' + sizeMB + 'MB\n\n超过 2MB 上传速度可能较慢，是否继续？')) return;
+        }
+
+        var formData = new FormData();
         formData.append('pet_id', petId);
         formData.append('photo', file);
+
         try {
-          const res = await fetch(`${WORKER_URL}/api/upload-photo`, {
+          var btn = document.querySelector('button[onclick*="uploadPhoto"]');
+          if (btn) { btn.textContent = '⏳ 上传中...'; btn.disabled = true; }
+
+          var res = await fetch(WORKER_URL + '/api/upload-photo', {
             method: 'POST',
             headers: { 'X-User-Id': currentUser.id },
             body: formData
           });
-          const data = await res.json();
+          var data = await res.json();
           if (data.success) {
-            alert('上传成功 ✅');
+            alert('📸 照片上传成功！');
             loadPets();
           } else {
             alert(data.message || '上传失败');
           }
         } catch (e) {
           alert('网络错误，请稍后重试');
+        } finally {
+          if (btn) { btn.textContent = '📸 上传照片'; btn.disabled = false; }
         }
       };
+
       input.click();
-    }
-
-    function editPet(petId) {
-      const pet = userPets.find(p => p.id === petId);
-      if (!pet) return;
-      const name = prompt('宠物名字：', pet.name || '');
-      if (name === null) return;
-      const birthday = prompt('生日（如 2024-01-01）：', pet.birthday || '');
-      if (birthday === null) return;
-      const gender = prompt('性别（male 男孩 / female 女孩）：', pet.gender || '');
-      if (gender === null) return;
-
-      fetch(`${WORKER_URL}/api/update-pet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': currentUser.id
-        },
-        body: JSON.stringify({ pet_id: petId, name, birthday, gender })
-      }).then(r => r.json()).then(d => {
-        if (d.success) {
-          alert('已更新 ✅');
-          loadPets();
-        } else {
-          alert(d.message || '更新失败');
-        }
-      });
     }
 
     async function loadMyCard() {
@@ -810,9 +925,7 @@
       }
     }
 
-    // ===== 🆕 修复版：用 addEventListener 代替内联 onclick =====
     function openUnsatisfiedModal(cardId) {
-      // 如果已有弹窗则关闭
       var oldModal = document.getElementById('feedback-modal');
       if (oldModal) oldModal.remove();
 
@@ -844,7 +957,6 @@
 
       document.body.appendChild(overlay);
 
-      // 🆕 全部用 addEventListener 绑定事件
       document.getElementById('feedback-replace-photo').addEventListener('change', function() {
         var area = document.getElementById('feedback-photo-area');
         area.style.display = this.checked ? 'block' : 'none';
@@ -882,13 +994,11 @@
       var photoInput = document.getElementById('feedback-photo-input');
       var photoFile = photoInput ? photoInput.files[0] : null;
 
-      // 校验
       if (!comment && !photoFile) {
         alert('请填写需要修改的文字说明，或上传一张新照片');
         return;
       }
 
-      // 禁用按钮
       var btn = document.getElementById('btn-submit-feedback');
       if (btn) {
         btn.disabled = true;
