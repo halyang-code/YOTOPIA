@@ -711,7 +711,7 @@
                 <div class="pet-name">${pet.name || '未命名'}</div>
                 <div class="pet-meta">
                   ${pet.birthday ? '🎂 ' + pet.birthday : ''}
-                  ${pet.gender ? ' ｜ ' + (pet.gender === 'male' ? '♂ 男孩' : '♀ 女孩') : ''}
+                  ${pet.gender ? ' ｜ ' + (pet.gender === 'male' ? '男孩' : '女孩') : ''}
                 </div>
               </div>
             </div>
@@ -762,7 +762,7 @@
       var petName = pet ? (pet.name || '宠物') : '宠物';
 
       showConfirm(
-        '📸 为「' + petName + '」上传照片\n\n⚠️ 建议使用 1MB 以内的清晰照片\n照片过大可能导致上传速度变慢',
+        '📸 为「' + petName + '」上传照片\n\n⚠️ 建议使用 2MB 以内的清晰照片\n照片过大可能导致上传速度变慢',
         function() {
           actuallyUploadPhoto(petId);
         },
@@ -884,7 +884,7 @@
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
 
       overlay.innerHTML = '\
-        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.12);">\
+        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;max-height:85vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.12);">\
           <h3 style="font-size:18px;font-weight:600;color:#664B3A;margin-bottom:4px;">🐱 添加新宠物</h3>\
           <p style="font-size:13px;color:#9A8A7E;margin-bottom:20px;">填写宠物的基本信息</p>\
           \
@@ -903,8 +903,8 @@
             <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">性别</label>\
             <select id="modal-pet-gender" class="modal-select">\
               <option value="">未知</option>\
-              <option value="male">♂ 男孩</option>\
-              <option value="female">♀ 女孩</option>\
+              <option value="male">男孩</option>\
+              <option value="female">女孩</option>\
             </select>\
           </div>\
           \
@@ -995,7 +995,7 @@
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
 
       overlay.innerHTML = '\
-        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.12);">\
+        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;max-height:85vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.12);">\
           <h3 style="font-size:18px;font-weight:600;color:#664B3A;margin-bottom:4px;">✏️ 编辑宠物</h3>\
           <p style="font-size:13px;color:#9A8A7E;margin-bottom:20px;">修改 ' + (pet.name || '宠物') + ' 的资料</p>\
           \
@@ -1014,8 +1014,8 @@
             <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">性别</label>\
             <select id="edit-pet-gender" class="modal-select">\
               <option value="">未知</option>\
-              <option value="male" ' + (pet.gender === 'male' ? 'selected' : '') + '>♂ 男孩</option>\
-              <option value="female" ' + (pet.gender === 'female' ? 'selected' : '') + '>♀ 女孩</option>\
+              <option value="male" ' + (pet.gender === 'male' ? 'selected' : '') + '>男孩</option>\
+              <option value="female" ' + (pet.gender === 'female' ? 'selected' : '') + '>女孩</option>\
             </select>\
           </div>\
           \
