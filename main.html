@@ -258,6 +258,27 @@
       border-radius: 10px;
       margin-bottom: 4px;
     }
+
+    /* ===== 🆕 添加新宠物按钮样式 ===== */
+    .add-pet-btn {
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 20px;
+    }
+    .add-pet-btn button {
+      background: #664B3A;
+      color: #DBC6B4;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .add-pet-btn button:active {
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
@@ -389,13 +410,21 @@
         cardContainer.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">🐾</div>
-            <p>还没有添加宠物<br>请联系管理员添加 🐱</p>
+            <p>还没有添加宠物<br>点击下方添加你的第一只宠物 🐱</p>
           </div>
+          <div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>
         `;
-        detailContainer.innerHTML = '';
+        detailContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🐾</div>
+            <p>还没有添加宠物</p>
+          </div>
+          <div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>
+        `;
         return;
       }
 
+      // 首页
       cardContainer.innerHTML = userPets.map(pet => {
         const photoHtml = pet.photo_url
           ? `<img class="pet-avatar" src="${pet.photo_url}" alt="${pet.name}">`
@@ -416,6 +445,7 @@
         `;
       }).join('');
 
+      // 宠物详情页
       let detailHtml = '';
       userPets.forEach(p => {
         const pPhoto = p.photo_url
@@ -441,8 +471,41 @@
           </div>
         `;
       });
+
+      // ===== 🆕 加上"添加新宠物"按钮 =====
+      detailHtml += `
+        <div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>
+      `;
+
       detailContainer.innerHTML = detailHtml;
     }
+
+    // ===== 🆕 用户自行添加宠物 =====
+    window.addPet = async function() {
+      var name = prompt("请输入宠物名字：");
+      if (!name) return;
+      var birthday = prompt("请输入生日（如 2024-01-01，可留空）：");
+      if (birthday === null) return;
+      var gender = prompt("请输入性别（male 男孩 / female 女孩，可留空）：");
+      if (gender === null) return;
+
+      try {
+        var res = await fetch(WORKER_URL + "/api/add-pet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-User-Id": currentUser.id },
+          body: JSON.stringify({ name: name, birthday: birthday || "", gender: gender || "" })
+        });
+        var d = await res.json();
+        if (d.success) {
+          alert("🐱 添加成功！");
+          loadPets();
+        } else {
+          alert(d.message || "添加失败");
+        }
+      } catch (e) {
+        alert("网络错误，请稍后重试");
+      }
+    };
 
     function uploadPhoto(petId) {
       const input = document.createElement('input');
@@ -481,7 +544,7 @@
       if (name === null) return;
       const birthday = prompt('生日（如 2024-01-01）：', pet.birthday || '');
       if (birthday === null) return;
-      const gender = prompt('性别（male / female）：', pet.gender || '');
+      const gender = prompt('性别（male 男孩 / female 女孩）：', pet.gender || '');
       if (gender === null) return;
 
       fetch(`${WORKER_URL}/api/update-pet`, {
@@ -674,7 +737,7 @@
       window.location.href = 'index.html';
     }
 
-    // ===== 🌟 暴露函数到 window，确保弹框 onclick 能调用 =====
+    // ===== 弹框函数（暴露到 window） =====
     window.closeFeedbackModal = function() {
       const el = document.getElementById('feedback-modal');
       if (el) el.remove();
