@@ -14,7 +14,6 @@
       color: #664B3A;
     }
 
-    /* ===== 顶部导航 ===== */
     .top-nav {
       position: sticky;
       top: 0;
@@ -53,7 +52,6 @@
       background: rgba(102,75,58,0.08);
     }
 
-    /* ===== 页面容器 ===== */
     .page {
       display: none;
       padding: 0 20px 20px;
@@ -73,7 +71,6 @@
       margin-bottom: 16px;
     }
 
-    /* ===== 宠物卡片 ===== */
     .pet-card {
       background: #fff;
       border-radius: 20px;
@@ -130,7 +127,6 @@
       background: #E8DDD6;
     }
 
-    /* ===== 空状态 ===== */
     .empty-state {
       text-align: center;
       padding: 48px 20px;
@@ -146,36 +142,14 @@
       line-height: 1.8;
     }
 
-    /* ===== 专属卡片预览 ===== */
     .card-preview-box {
       background: #fff;
       border-radius: 20px;
-      padding: 48px 24px;
+      padding: 20px;
       text-align: center;
       box-shadow: 0 4px 20px rgba(102,75,58,0.06);
-      min-height: 280px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .card-preview-box .preview-icon {
-      font-size: 52px;
-      margin-bottom: 16px;
-      opacity: 0.3;
-    }
-    .card-preview-box .preview-text {
-      font-size: 14px;
-      color: #C4B5A9;
-      letter-spacing: 0.5px;
-      line-height: 1.8;
-    }
-    .card-preview-box .preview-text small {
-      font-size: 12px;
-      color: #DBC6B4;
     }
 
-    /* ===== 我的页面 ===== */
     .profile-card {
       background: #fff;
       border-radius: 20px;
@@ -230,7 +204,6 @@
       opacity: 0.7;
     }
 
-    /* ===== 底部 Tab ===== */
     .bottom-tab {
       position: fixed;
       bottom: 0;
@@ -266,7 +239,6 @@
       font-weight: 600;
     }
 
-    /* ===== Slogan ===== */
     .brand-slogan {
       text-align: center;
       margin-top: 16px;
@@ -278,7 +250,6 @@
 </head>
 <body>
 
-  <!-- ===== 顶部导航 ===== -->
   <nav class="top-nav">
     <div class="brand">
       <span>🐾 YOTOPIA</span>
@@ -286,31 +257,21 @@
     <button class="profile-btn" onclick="switchTab('profile')">👤 我的</button>
   </nav>
 
-  <!-- ===== 首页 ===== -->
   <div id="page-home" class="page active">
     <div id="pet-card-container"></div>
     <div class="brand-slogan">让陪伴，融入自然</div>
   </div>
 
-  <!-- ===== 宠物 ===== -->
   <div id="page-pets" class="page">
     <div class="page-title">🐱 我的宠物</div>
     <div id="pet-detail-container"></div>
   </div>
 
-  <!-- ===== 专属卡片 ===== -->
   <div id="page-card" class="page">
     <div class="page-title">🎴 专属卡片</div>
-    <div class="card-preview-box">
-      <div class="preview-icon">🎴</div>
-      <div class="preview-text">
-        卡片正在设计中...<br>
-        <small>敬请期待</small>
-      </div>
-    </div>
+    <div id="card-content-area"></div>
   </div>
 
-  <!-- ===== 我的 ===== -->
   <div id="page-profile" class="page">
     <div class="page-title">👤 我的</div>
     <div class="profile-card">
@@ -330,7 +291,6 @@
     </div>
   </div>
 
-  <!-- ===== 底部 Tab ===== -->
   <div class="bottom-tab">
     <div class="tab-item active" onclick="switchTab('home')" data-tab="home">
       <span class="tab-icon">🏠</span>
@@ -355,7 +315,6 @@
     let currentUser = null;
     let userPets = [];
 
-    // ===== 初始化 =====
     (function() {
       const stored = localStorage.getItem('yotopia_user');
       if (!stored) {
@@ -367,20 +326,19 @@
       loadPets();
     })();
 
-    // ===== Tab 切换 =====
     function switchTab(tab) {
-      // 切换页面
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       document.getElementById('page-' + tab).classList.add('active');
-      // 切换底部 tab 高亮
       document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
       const activeTab = document.querySelector(`.tab-item[data-tab="${tab}"]`);
       if (activeTab) activeTab.classList.add('active');
-      // 滚回顶部
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tab === 'card') {
+        loadMyCard();
+      }
     }
 
-    // ===== 加载宠物数据 =====
     async function loadPets() {
       try {
         const res = await fetch(`${WORKER_URL}/api/my-pets`, {
@@ -411,7 +369,7 @@
         return;
       }
 
-      // --- 首页：显示所有宠物卡片 ---
+      // --- 首页：展示所有宠物 ---
       cardContainer.innerHTML = userPets.map(pet => {
         const photoHtml = pet.photo_url
           ? `<img class="pet-avatar" src="${pet.photo_url}" alt="${pet.name}">`
@@ -461,7 +419,6 @@
       detailContainer.innerHTML = detailHtml;
     }
 
-    // ===== 上传照片 =====
     function uploadPhoto(petId) {
       const input = document.createElement('input');
       input.type = 'file';
@@ -492,7 +449,6 @@
       input.click();
     }
 
-    // ===== 编辑宠物 =====
     function editPet(petId) {
       const pet = userPets.find(p => p.id === petId);
       if (!pet) return;
@@ -518,6 +474,164 @@
           alert(d.message || '更新失败');
         }
       });
+    }
+
+    // ===== 专属卡片 =====
+    async function loadMyCard() {
+      const container = document.getElementById('card-content-area');
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:#C4B5A9;">加载中...</div>';
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/my-card`, {
+          headers: { 'X-User-Id': currentUser.id }
+        });
+        const data = await res.json();
+
+        if (!data.success || !data.card) {
+          container.innerHTML = `
+            <div class="card-preview-box">
+              <div class="preview-icon" style="font-size:52px;margin-bottom:16px;">🎴</div>
+              <div class="preview-text" style="font-size:14px;color:#C4B5A9;">
+                暂无专属卡片<br>
+                <small style="font-size:12px;color:#DBC6B4;">请联系管理员制作</small>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        const card = data.card;
+        container.innerHTML = `
+          <div class="card-preview-box">
+            <img src="${card.image_url}" style="width:100%;max-width:320px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px;">
+            <p style="font-size:13px;color:#9A8A7E;margin-bottom:16px;">这是你的专属卡片，请确认是否满意</p>
+            <div style="display:flex;gap:12px;justify-content:center;">
+              <button onclick="submitSatisfied(${card.id})" style="flex:1;max-width:160px;padding:12px;background:#664B3A;color:#DBC6B4;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">✅ 满意并提交</button>
+              <button onclick="openUnsatisfiedModal(${card.id})" style="flex:1;max-width:160px;padding:12px;background:#FFF0EE;color:#C0392B;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">🔄 不满意需要修改</button>
+            </div>
+          </div>
+        `;
+      } catch (e) {
+        container.innerHTML = `<div class="card-preview-box"><div class="preview-text">加载失败，请稍后重试</div></div>`;
+      }
+    }
+
+    async function submitSatisfied(cardId) {
+      const formData = new FormData();
+      formData.append('user_id', currentUser.id);
+      formData.append('card_id', cardId);
+      formData.append('satisfaction', 'satisfied');
+      formData.append('comment', '');
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/card-feedback`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('🎉 反馈已提交！感谢你的确认 ✅');
+          loadMyCard();
+        } else {
+          alert('提交失败，请重试');
+        }
+      } catch (e) {
+        alert('网络错误');
+      }
+    }
+
+    function openUnsatisfiedModal(cardId) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;';
+      overlay.id = 'feedback-modal';
+
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:20px;padding:24px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;">
+          <h3 style="font-size:17px;color:#664B3A;margin-bottom:16px;">🔄 需要修改的内容</h3>
+
+          <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:4px;">请描述不满意的地方</label>
+          <textarea id="feedback-comment" rows="4" style="width:100%;padding:12px;border:1.5px solid #F0E8E2;border-radius:10px;font-size:14px;color:#664B3A;background:#F9F5F2;outline:none;margin-bottom:16px;resize:vertical;" placeholder="例如：颜色不够柔和、字体太大、宠物照片不太像..."></textarea>
+
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:8px;">
+              <input type="checkbox" id="feedback-replace-photo" onchange="togglePhotoUpload()">
+               对图片不满意，我想上传一张新照片
+            </label>
+            <div id="feedback-photo-area" style="display:none;">
+              <input type="file" id="feedback-photo-input" accept="image/*" style="font-size:13px;color:#664B3A;">
+              <img id="feedback-photo-preview" style="width:100%;max-width:200px;border-radius:10px;margin-top:8px;display:none;">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;">
+            <button onclick="closeFeedbackModal()" style="flex:1;padding:12px;background:#F0E8E2;color:#9A8A7E;border:none;border-radius:10px;font-size:14px;cursor:pointer;">取消</button>
+            <button onclick="submitUnsatisfied(${cardId})" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">提交反馈</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeFeedbackModal(); });
+    }
+
+    function closeFeedbackModal() {
+      const el = document.getElementById('feedback-modal');
+      if (el) el.remove();
+    }
+
+    function togglePhotoUpload() {
+      const area = document.getElementById('feedback-photo-area');
+      const checked = document.getElementById('feedback-replace-photo').checked;
+      area.style.display = checked ? 'block' : 'none';
+
+      if (checked) {
+        document.getElementById('feedback-photo-input').onchange = function(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const preview = document.getElementById('feedback-photo-preview');
+            preview.src = ev.target.result;
+            preview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        };
+      }
+    }
+
+    async function submitUnsatisfied(cardId) {
+      const comment = document.getElementById('feedback-comment').value.trim();
+      const photoInput = document.getElementById('feedback-photo-input');
+      const photoFile = photoInput ? photoInput.files[0] : null;
+
+      if (!comment && !photoFile) {
+        alert('请至少填写文字说明或上传一张新照片');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('user_id', currentUser.id);
+      formData.append('card_id', cardId);
+      formData.append('satisfaction', 'unsatisfied');
+      formData.append('comment', comment);
+      if (photoFile) formData.append('new_photo', photoFile);
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/card-feedback`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('📩 反馈已提交！管理员会尽快修改 ✅');
+          closeFeedbackModal();
+          loadMyCard();
+        } else {
+          alert('提交失败，请重试');
+        }
+      } catch (e) {
+        alert('网络错误');
+      }
     }
 
     // ===== 我的页面 =====
