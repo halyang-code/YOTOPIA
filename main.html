@@ -259,7 +259,6 @@
       margin-bottom: 4px;
     }
 
-    /* ===== 🆕 添加新宠物按钮样式 ===== */
     .add-pet-btn {
       text-align: center;
       margin-top: 8px;
@@ -472,7 +471,6 @@
         `;
       });
 
-      // ===== 🆕 加上"添加新宠物"按钮 =====
       detailHtml += `
         <div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>
       `;
@@ -480,7 +478,6 @@
       detailContainer.innerHTML = detailHtml;
     }
 
-    // ===== 🆕 用户自行添加宠物 =====
     window.addPet = async function() {
       var name = prompt("请输入宠物名字：");
       if (!name) return;
@@ -653,47 +650,128 @@
           alert('🎉 反馈已提交！感谢你的确认 ✅');
           loadMyCard();
         } else {
-          alert('提交失败，请重试');
+          alert('提交失败：' + (data.message || '请重试'));
         }
       } catch (e) {
-        alert('网络错误');
+        alert('网络错误，请稍后重试');
       }
     }
 
+    // ===== 🆕 修复版：用 addEventListener 代替内联 onclick =====
     function openUnsatisfiedModal(cardId) {
-      const overlay = document.createElement('div');
+      // 如果已有弹窗则关闭
+      var oldModal = document.getElementById('feedback-modal');
+      if (oldModal) oldModal.remove();
+
+      var overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;';
       overlay.id = 'feedback-modal';
 
-      overlay.innerHTML = `
-        <div style="background:#fff;border-radius:20px;padding:24px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;">
-          <h3 style="font-size:17px;color:#664B3A;margin-bottom:16px;">🔄 需要修改的内容</h3>
-
-          <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:4px;">请描述不满意的地方</label>
-          <textarea id="feedback-comment" rows="4" style="width:100%;padding:12px;border:1.5px solid #F0E8E2;border-radius:10px;font-size:14px;color:#664B3A;background:#F9F5F2;outline:none;margin-bottom:16px;resize:vertical;" placeholder="例如：颜色不够柔和、字体太大、宠物照片不太像..."></textarea>
-
-          <div style="margin-bottom:16px;">
-            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:8px;">
-              <input type="checkbox" id="feedback-replace-photo" onchange="window.togglePhotoUpload()">
-              对图片不满意，我想上传一张新照片
-            </label>
-            <div id="feedback-photo-area" style="display:none;">
-              <input type="file" id="feedback-photo-input" accept="image/*" style="font-size:13px;color:#664B3A;">
-              <img id="feedback-photo-preview" style="width:100%;max-width:200px;border-radius:10px;margin-top:8px;display:none;">
-            </div>
-          </div>
-
-          <p style="font-size:12px;color:#C0392B;margin-bottom:12px;">⚠️ 提交后不能修改，请确认内容无误</p>
-
-          <div style="display:flex;gap:10px;">
-            <button onclick="window.closeFeedbackModal()" style="flex:1;padding:12px;background:#F0E8E2;color:#9A8A7E;border:none;border-radius:10px;font-size:14px;cursor:pointer;">取消</button>
-            <button onclick="window.submitUnsatisfied(${cardId})" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">确认提交反馈</button>
-          </div>
-        </div>
-      `;
+      overlay.innerHTML = '\
+        <div style="background:#fff;border-radius:20px;padding:24px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;">\
+          <h3 style="font-size:17px;color:#664B3A;margin-bottom:16px;">🔄 需要修改的内容</h3>\
+          <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:4px;">请描述不满意的地方</label>\
+          <textarea id="feedback-comment" rows="4" style="width:100%;padding:12px;border:1.5px solid #F0E8E2;border-radius:10px;font-size:14px;color:#664B3A;background:#F9F5F2;outline:none;margin-bottom:16px;resize:vertical;" placeholder="例如：颜色不够柔和、字体太大、宠物照片不太像..."></textarea>\
+          <div style="margin-bottom:16px;">\
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:8px;">\
+              <input type="checkbox" id="feedback-replace-photo">\
+              对图片不满意，我想上传一张新照片\
+            </label>\
+            <div id="feedback-photo-area" style="display:none;">\
+              <input type="file" id="feedback-photo-input" accept="image/*" style="font-size:13px;color:#664B3A;">\
+              <img id="feedback-photo-preview" style="width:100%;max-width:200px;border-radius:10px;margin-top:8px;display:none;">\
+            </div>\
+          </div>\
+          <p style="font-size:12px;color:#9A8A7E;margin-bottom:12px;">提交后不能修改，请确认内容无误</p>\
+          <div style="display:flex;gap:10px;">\
+            <button id="btn-cancel-feedback" style="flex:1;padding:12px;background:#F0E8E2;color:#9A8A7E;border:none;border-radius:10px;font-size:14px;cursor:pointer;">取消</button>\
+            <button id="btn-submit-feedback" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">确认提交反馈</button>\
+          </div>\
+        </div>';
 
       document.body.appendChild(overlay);
-      overlay.addEventListener('click', e => { if (e.target === overlay) window.closeFeedbackModal(); });
+
+      // 🆕 全部用 addEventListener 绑定事件
+      document.getElementById('feedback-replace-photo').addEventListener('change', function() {
+        var area = document.getElementById('feedback-photo-area');
+        area.style.display = this.checked ? 'block' : 'none';
+        if (this.checked) {
+          document.getElementById('feedback-photo-input').addEventListener('change', function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+              var preview = document.getElementById('feedback-photo-preview');
+              preview.src = ev.target.result;
+              preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+      });
+
+      document.getElementById('btn-cancel-feedback').addEventListener('click', function() {
+        overlay.remove();
+      });
+
+      document.getElementById('btn-submit-feedback').addEventListener('click', function() {
+        submitUnsatisfied(cardId);
+      });
+
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+      });
+    }
+
+    async function submitUnsatisfied(cardId) {
+      var commentEl = document.getElementById('feedback-comment');
+      var comment = commentEl ? commentEl.value.trim() : '';
+      var photoInput = document.getElementById('feedback-photo-input');
+      var photoFile = photoInput ? photoInput.files[0] : null;
+
+      // 校验
+      if (!comment && !photoFile) {
+        alert('请填写需要修改的文字说明，或上传一张新照片');
+        return;
+      }
+
+      // 禁用按钮
+      var btn = document.getElementById('btn-submit-feedback');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '提交中...';
+      }
+
+      var formData = new FormData();
+      formData.append('user_id', currentUser.id);
+      formData.append('card_id', cardId);
+      formData.append('satisfaction', 'unsatisfied');
+      formData.append('comment', comment);
+      if (photoFile) formData.append('new_photo', photoFile);
+
+      try {
+        var res = await fetch(WORKER_URL + '/api/card-feedback', {
+          method: 'POST',
+          body: formData
+        });
+        var data = await res.json();
+        if (data.success) {
+          addFeedbackCardId(cardId);
+          alert('📩 反馈已提交！管理员会尽快修改 ✅');
+          var modal = document.getElementById('feedback-modal');
+          if (modal) modal.remove();
+          loadMyCard();
+        } else {
+          alert('提交失败：' + (data.message || '请重试'));
+        }
+      } catch (e) {
+        alert('网络错误，请稍后重试');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '确认提交反馈';
+        }
+      }
     }
 
     // ===== 我的页面 =====
@@ -736,84 +814,6 @@
       localStorage.removeItem('yotopia_user');
       window.location.href = 'index.html';
     }
-
-    // ===== 弹框函数（暴露到 window） =====
-    window.closeFeedbackModal = function() {
-      const el = document.getElementById('feedback-modal');
-      if (el) el.remove();
-    };
-
-    window.togglePhotoUpload = function() {
-      const area = document.getElementById('feedback-photo-area');
-      const checked = document.getElementById('feedback-replace-photo').checked;
-      area.style.display = checked ? 'block' : 'none';
-
-      if (checked) {
-        document.getElementById('feedback-photo-input').onchange = function(e) {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = ev => {
-            const preview = document.getElementById('feedback-photo-preview');
-            preview.src = ev.target.result;
-            preview.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
-        };
-      }
-    };
-
-    window.submitUnsatisfied = async function(cardId) {
-      const comment = document.getElementById('feedback-comment').value.trim();
-      const photoInput = document.getElementById('feedback-photo-input');
-      const photoFile = photoInput ? photoInput.files[0] : null;
-    
-      // 更友好的提示
-      if (!comment && !photoFile) {
-        document.getElementById('feedback-error-msg').style.display = 'block';
-        return;
-      }
-    
-      // 禁用按钮防止重复点击
-      const btn = document.querySelector('#feedback-modal .btn-submit');
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = '提交中...';
-      }
-    
-      const formData = new FormData();
-      formData.append('user_id', currentUser.id);
-      formData.append('card_id', cardId);
-      formData.append('satisfaction', 'unsatisfied');
-      formData.append('comment', comment);
-      if (photoFile) formData.append('new_photo', photoFile);
-    
-      try {
-        const res = await fetch(`${WORKER_URL}/api/card-feedback`, {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          addFeedbackCardId(cardId);
-          alert('📩 反馈已提交！管理员会尽快修改 ✅');
-          window.closeFeedbackModal();
-          loadMyCard();
-        } else {
-          alert('提交失败：' + (data.message || '请重试'));
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = '确认提交反馈';
-          }
-        }
-      } catch (e) {
-        alert('网络错误，请稍后重试');
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = '确认提交反馈';
-        }
-      }
-    };
   </script>
 </body>
 </html>
