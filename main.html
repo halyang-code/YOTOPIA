@@ -247,6 +247,17 @@
       color: #DBC6B4;
       letter-spacing: 1px;
     }
+
+    .feedback-tag {
+      display: inline-block;
+      background: #E8F0E8;
+      color: #2D7D46;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 20px;
+      border-radius: 10px;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
@@ -340,6 +351,22 @@
       }
     }
 
+    // ===== localStorage 已反馈卡片管理 =====
+    function getFeedbackCardIds() {
+      try {
+        return JSON.parse(localStorage.getItem('yotopia_feedback_done') || '[]');
+      } catch { return []; }
+    }
+
+    function addFeedbackCardId(cardId) {
+      const list = getFeedbackCardIds();
+      const idStr = String(cardId);
+      if (!list.includes(idStr)) {
+        list.push(idStr);
+        localStorage.setItem('yotopia_feedback_done', JSON.stringify(list));
+      }
+    }
+
     async function loadPets() {
       try {
         const res = await fetch(`${WORKER_URL}/api/my-pets`, {
@@ -370,7 +397,6 @@
         return;
       }
 
-      // --- 首页：展示所有宠物 ---
       cardContainer.innerHTML = userPets.map(pet => {
         const photoHtml = pet.photo_url
           ? `<img class="pet-avatar" src="${pet.photo_url}" alt="${pet.name}">`
@@ -391,7 +417,6 @@
         `;
       }).join('');
 
-      // --- 宠物页：所有宠物 + 操作按钮 ---
       let detailHtml = '';
       userPets.forEach(p => {
         const pPhoto = p.photo_url
@@ -477,7 +502,7 @@
       });
     }
 
-    // ===== 专属卡片（支持多张 + 事件委托）=====
+    // ===== 专属卡片（支持多张 + 事件委托 + 已反馈锁定）=====
     async function loadMyCard() {
       const container = document.getElementById('card-content-area');
       container.innerHTML = '<div style="text-align:center;padding:40px;color:#C4B5A9;">加载中...</div>';
@@ -501,19 +526,38 @@
           return;
         }
 
-        // 遍历所有卡片 - 使用 data-card-id 替代 onclick
-        container.innerHTML = data.cards.map(card => `
-          <div class="card-preview-box">
-            <img src="${card.image_url}" style="width:100%;max-width:320px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px;">
-            <p style="font-size:13px;color:#9A8A7E;margin-bottom:16px;">这是你的专属卡片，请确认是否满意</p>
-            <div style="display:flex;gap:12px;justify-content:center;">
-              <button class="card-btn-satisfied" data-card-id="${card.id}" style="flex:1;max-width:160px;padding:12px;background:#664B3A;color:#DBC6B4;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">✅ 满意并提交</button>
-              <button class="card-btn-unsatisfied" data-card-id="${card.id}" style="flex:1;max-width:160px;padding:12px;background:#FFF0EE;color:#C0392B;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">🔄 不满意需要修改</button>
-            </div>
-          </div>
-        `).join('');
+        // 读取已反馈的卡片ID列表
+        const doneIds = getFeedbackCardIds();
 
-        // ---- 事件委托：监听所有卡片按钮 ----
+        // 遍历所有卡片
+        container.innerHTML = data.cards.map(card => {
+          const isDone = doneIds.includes(String(card.id));
+
+          if (isDone) {
+            // ---- 已反馈：显示已确认状态，按钮灰色禁用 ----
+            return `
+              <div class="card-preview-box">
+                <img src="${card.image_url}" style="width:100%;max-width:320px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px;">
+                <div class="feedback-tag">✅ 已确认反馈</div>
+                <p style="font-size:13px;color:#C4B5A9;margin-top:8px;">感谢你的反馈，如有新卡片会第一时间展示</p>
+              </div>
+            `;
+          } else {
+            // ---- 未反馈：显示两个按钮 ----
+            return `
+              <div class="card-preview-box">
+                <img src="${card.image_url}" style="width:100%;max-width:320px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px;">
+                <p style="font-size:13px;color:#9A8A7E;margin-bottom:16px;">这是你的专属卡片，请确认是否满意</p>
+                <div style="display:flex;gap:12px;justify-content:center;">
+                  <button class="card-btn-satisfied" data-card-id="${card.id}" style="flex:1;max-width:160px;padding:12px;background:#664B3A;color:#DBC6B4;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">✅ 满意并提交</button>
+                  <button class="card-btn-unsatisfied" data-card-id="${card.id}" style="flex:1;max-width:160px;padding:12px;background:#FFF0EE;color:#C0392B;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">🔄 不满意需要修改</button>
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
+
+        // ---- 事件委托 ----
         container.onclick = function(e) {
           const target = e.target;
           const cardId = target.getAttribute('data-card-id');
@@ -532,6 +576,11 @@
     }
 
     async function submitSatisfied(cardId) {
+      // ---- 确认弹窗 ----
+      if (!confirm('📝 确定提交「满意」反馈？\n\n提交后不能修改，请确认卡片效果满意后再提交。')) {
+        return;
+      }
+
       const formData = new FormData();
       formData.append('user_id', currentUser.id);
       formData.append('card_id', cardId);
@@ -545,6 +594,8 @@
         });
         const data = await res.json();
         if (data.success) {
+          // 标记为已反馈
+          addFeedbackCardId(cardId);
           alert('🎉 反馈已提交！感谢你的确认 ✅');
           loadMyCard();
         } else {
@@ -578,9 +629,11 @@
             </div>
           </div>
 
+          <p style="font-size:12px;color:#C0392B;margin-bottom:12px;">⚠️ 提交后不能修改，请确认内容无误</p>
+
           <div style="display:flex;gap:10px;">
             <button onclick="closeFeedbackModal()" style="flex:1;padding:12px;background:#F0E8E2;color:#9A8A7E;border:none;border-radius:10px;font-size:14px;cursor:pointer;">取消</button>
-            <button onclick="submitUnsatisfied(${cardId})" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">提交反馈</button>
+            <button onclick="submitUnsatisfied(${cardId})" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">确认提交反馈</button>
           </div>
         </div>
       `;
@@ -638,6 +691,8 @@
         });
         const data = await res.json();
         if (data.success) {
+          // 标记为已反馈
+          addFeedbackCardId(cardId);
           alert('📩 反馈已提交！管理员会尽快修改 ✅');
           closeFeedbackModal();
           loadMyCard();
