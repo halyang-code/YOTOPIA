@@ -892,7 +892,7 @@
 
     function openModal(title, bodyHtml, confirmText, callback, isDanger) {
       document.getElementById('modalTitle').textContent = title;
-      document.getElementById('modalBody').innerHTML = bodyHtml;
+      document.getElementById('modalBody').inner= bodyHtml;
       document.getElementById('modalConfirmBtn').textContent = confirmText || '确认';
       document.getElementById('modalConfirmBtn').className = isDanger ? 'btn-danger' : 'btn-confirm';
       modalCallback = callback;
@@ -942,14 +942,14 @@
         }
       } catch (e) {
         console.error('加载用户失败:', e);
-        document.getElementById('userTableBody').innerHTML = '<tr class="empty-row"><td colspan="5">加载失败，请检查 Worker</td></tr>';
+        document.getElementById('userTableBody').inner= '<tr class="empty-row"><td colspan="5">加载失败，请检查 Worker</td></tr>';
       }
     }
 
     function renderUsers(users) {
       const tbody = document.getElementById('userTableBody');
       if (!users || users.length === 0) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">暂无用户，点击右上角添加</td></tr>';
+        tbody.inner= '<tr class="empty-row"><td colspan="5">暂无用户，点击右上角添加</td></tr>';
         return;
       }
       tbody.innerHTML = users.map(u => `
@@ -1293,6 +1293,7 @@
       btn.textContent = '⬆️ 上传卡片';
     }
 
+    // ===== 🆕 加载已上传卡片（含删除按钮） =====
     async function loadUploadedCards() {
       try {
         const res = await fetch(`${WORKER_URL}/api/admin/cards`, {
@@ -1302,9 +1303,10 @@
         const container = document.getElementById('uploadedCardsList');
         if (data.success && data.cards && data.cards.length > 0) {
           container.innerHTML = data.cards.map(c => `
-            <div style="text-align:center;">
+            <div style="text-align:center;position:relative;">
               <img src="${c.image_url}" style="width:120px;height:120px;border-radius:12px;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
               <div style="font-size:11px;color:#9A8A7E;margin-top:4px;">${c.wechat_id || ''}</div>
+              <button onclick="deleteCard('${c.id}')" style="position:absolute;top:-6px;right:-6px;width:24px;height:24px;border:none;border-radius:50%;background:#C0392B;color:#fff;font-size:14px;cursor:pointer;line-height:24px;text-align:center;box-shadow:0 2px 8px rgba(192,57,43,0.3);">×</button>
             </div>
           `).join('');
         } else {
@@ -1315,6 +1317,29 @@
       }
     }
 
+    // ===== 🆕 管理员删除卡片 =====
+    async function deleteCard(cardId) {
+      if (!confirm('⚠️ 确定要删除这张卡片吗？\n\n删除后不可恢复，关联的反馈也会一并清除。')) return;
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/admin/delete-card`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+          body: JSON.stringify({ card_id: cardId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('🗑️ 卡片已删除');
+          loadUploadedCards();
+          loadDashboard();
+        } else {
+          showToast(data.message || '删除失败', true);
+        }
+      } catch (e) {
+        showToast('网络错误', true);
+      }
+    }
+    
     async function loadLogs() {
       try {
         const res = await fetch(`${WORKER_URL}/api/admin/logs`, {
