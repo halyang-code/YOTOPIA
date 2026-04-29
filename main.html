@@ -295,6 +295,15 @@
     .modal-input:focus {
       border-color: #DBC6B4;
     }
+    /* 🆕 让 date 输入框与其他输入框完全等高 */
+    .modal-input[type="date"] {
+      height: 48px;
+      line-height: 24px;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 12px 14px;
+      box-sizing: border-box;
+    }
     .modal-input::placeholder {
       color: #DBC6B4;
     }
@@ -734,7 +743,7 @@
                 <div class="pet-name">${p.name || '未命名'}</div>
                 <div class="pet-meta">
                   ${p.birthday ? '🎂 ' + p.birthday : ''}
-                  ${p.gender ? ' ｜ ' + (p.gender === 'male' ? '♂ 男孩' : '♀ 女孩') : ''}
+                  ${p.gender ? ' ｜ ' + (p.gender === 'male' ? '男孩' : '女孩') : ''}
                 </div>
               </div>
             </div>
