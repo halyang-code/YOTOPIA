@@ -351,7 +351,6 @@
       }
     }
 
-    // ===== localStorage 已反馈卡片管理 =====
     function getFeedbackCardIds() {
       try {
         return JSON.parse(localStorage.getItem('yotopia_feedback_done') || '[]');
@@ -502,7 +501,6 @@
       });
     }
 
-    // ===== 专属卡片（支持多张 + 事件委托 + 已反馈锁定）=====
     async function loadMyCard() {
       const container = document.getElementById('card-content-area');
       container.innerHTML = '<div style="text-align:center;padding:40px;color:#C4B5A9;">加载中...</div>';
@@ -526,15 +524,12 @@
           return;
         }
 
-        // 读取已反馈的卡片ID列表
         const doneIds = getFeedbackCardIds();
 
-        // 遍历所有卡片
         container.innerHTML = data.cards.map(card => {
           const isDone = doneIds.includes(String(card.id));
 
           if (isDone) {
-            // ---- 已反馈：显示已确认状态，按钮灰色禁用 ----
             return `
               <div class="card-preview-box">
                 <img src="${card.image_url}" style="width:100%;max-width:320px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px;">
@@ -543,7 +538,6 @@
               </div>
             `;
           } else {
-            // ---- 未反馈：显示两个按钮 ----
             return `
               <div class="card-preview-box">
                 <img src="${card.image_url}" style="width:100%;max-width:320px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px;">
@@ -557,7 +551,6 @@
           }
         }).join('');
 
-        // ---- 事件委托 ----
         container.onclick = function(e) {
           const target = e.target;
           const cardId = target.getAttribute('data-card-id');
@@ -576,7 +569,6 @@
     }
 
     async function submitSatisfied(cardId) {
-      // ---- 确认弹窗 ----
       if (!confirm('📝 确定提交「满意」反馈？\n\n提交后不能修改，请确认卡片效果满意后再提交。')) {
         return;
       }
@@ -594,7 +586,6 @@
         });
         const data = await res.json();
         if (data.success) {
-          // 标记为已反馈
           addFeedbackCardId(cardId);
           alert('🎉 反馈已提交！感谢你的确认 ✅');
           loadMyCard();
@@ -620,8 +611,8 @@
 
           <div style="margin-bottom:16px;">
             <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:8px;">
-              <input type="checkbox" id="feedback-replace-photo" onchange="togglePhotoUpload()">
-               对图片不满意，我想上传一张新照片
+              <input type="checkbox" id="feedback-replace-photo" onchange="window.togglePhotoUpload()">
+              对图片不满意，我想上传一张新照片
             </label>
             <div id="feedback-photo-area" style="display:none;">
               <input type="file" id="feedback-photo-input" accept="image/*" style="font-size:13px;color:#664B3A;">
@@ -632,76 +623,14 @@
           <p style="font-size:12px;color:#C0392B;margin-bottom:12px;">⚠️ 提交后不能修改，请确认内容无误</p>
 
           <div style="display:flex;gap:10px;">
-            <button onclick="closeFeedbackModal()" style="flex:1;padding:12px;background:#F0E8E2;color:#9A8A7E;border:none;border-radius:10px;font-size:14px;cursor:pointer;">取消</button>
-            <button onclick="submitUnsatisfied(${cardId})" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">确认提交反馈</button>
+            <button onclick="window.closeFeedbackModal()" style="flex:1;padding:12px;background:#F0E8E2;color:#9A8A7E;border:none;border-radius:10px;font-size:14px;cursor:pointer;">取消</button>
+            <button onclick="window.submitUnsatisfied(${cardId})" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">确认提交反馈</button>
           </div>
         </div>
       `;
 
       document.body.appendChild(overlay);
-      overlay.addEventListener('click', e => { if (e.target === overlay) closeFeedbackModal(); });
-    }
-
-    function closeFeedbackModal() {
-      const el = document.getElementById('feedback-modal');
-      if (el) el.remove();
-    }
-
-    function togglePhotoUpload() {
-      const area = document.getElementById('feedback-photo-area');
-      const checked = document.getElementById('feedback-replace-photo').checked;
-      area.style.display = checked ? 'block' : 'none';
-
-      if (checked) {
-        document.getElementById('feedback-photo-input').onchange = function(e) {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = ev => {
-            const preview = document.getElementById('feedback-photo-preview');
-            preview.src = ev.target.result;
-            preview.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
-        };
-      }
-    }
-
-    async function submitUnsatisfied(cardId) {
-      const comment = document.getElementById('feedback-comment').value.trim();
-      const photoInput = document.getElementById('feedback-photo-input');
-      const photoFile = photoInput ? photoInput.files[0] : null;
-
-      if (!comment && !photoFile) {
-        alert('请至少填写文字说明或上传一张新照片');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('user_id', currentUser.id);
-      formData.append('card_id', cardId);
-      formData.append('satisfaction', 'unsatisfied');
-      formData.append('comment', comment);
-      if (photoFile) formData.append('new_photo', photoFile);
-
-      try {
-        const res = await fetch(`${WORKER_URL}/api/card-feedback`, {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          // 标记为已反馈
-          addFeedbackCardId(cardId);
-          alert('📩 反馈已提交！管理员会尽快修改 ✅');
-          closeFeedbackModal();
-          loadMyCard();
-        } else {
-          alert('提交失败，请重试');
-        }
-      } catch (e) {
-        alert('网络错误');
-      }
+      overlay.addEventListener('click', e => { if (e.target === overlay) window.closeFeedbackModal(); });
     }
 
     // ===== 我的页面 =====
@@ -744,7 +673,68 @@
       localStorage.removeItem('yotopia_user');
       window.location.href = 'index.html';
     }
-  </script>
 
+    // ===== 🌟 暴露函数到 window，确保弹框 onclick 能调用 =====
+    window.closeFeedbackModal = function() {
+      const el = document.getElementById('feedback-modal');
+      if (el) el.remove();
+    };
+
+    window.togglePhotoUpload = function() {
+      const area = document.getElementById('feedback-photo-area');
+      const checked = document.getElementById('feedback-replace-photo').checked;
+      area.style.display = checked ? 'block' : 'none';
+
+      if (checked) {
+        document.getElementById('feedback-photo-input').onchange = function(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const preview = document.getElementById('feedback-photo-preview');
+            preview.src = ev.target.result;
+            preview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        };
+      }
+    };
+
+    window.submitUnsatisfied = async function(cardId) {
+      const comment = document.getElementById('feedback-comment').value.trim();
+      const photoInput = document.getElementById('feedback-photo-input');
+      const photoFile = photoInput ? photoInput.files[0] : null;
+
+      if (!comment && !photoFile) {
+        alert('请至少填写文字说明或上传一张新照片');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('user_id', currentUser.id);
+      formData.append('card_id', cardId);
+      formData.append('satisfaction', 'unsatisfied');
+      formData.append('comment', comment);
+      if (photoFile) formData.append('new_photo', photoFile);
+
+      try {
+        const res = await fetch(`${WORKER_URL}/api/card-feedback`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          addFeedbackCardId(cardId);
+          alert('📩 反馈已提交！管理员会尽快修改 ✅');
+          window.closeFeedbackModal();
+          loadMyCard();
+        } else {
+          alert('提交失败，请重试');
+        }
+      } catch (e) {
+        alert('网络错误');
+      }
+    };
+  </script>
 </body>
 </html>
