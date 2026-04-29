@@ -767,19 +767,27 @@
       const comment = document.getElementById('feedback-comment').value.trim();
       const photoInput = document.getElementById('feedback-photo-input');
       const photoFile = photoInput ? photoInput.files[0] : null;
-
+    
+      // 更友好的提示
       if (!comment && !photoFile) {
-        alert('请至少填写文字说明或上传一张新照片');
+        document.getElementById('feedback-error-msg').style.display = 'block';
         return;
       }
-
+    
+      // 禁用按钮防止重复点击
+      const btn = document.querySelector('#feedback-modal .btn-submit');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '提交中...';
+      }
+    
       const formData = new FormData();
       formData.append('user_id', currentUser.id);
       formData.append('card_id', cardId);
       formData.append('satisfaction', 'unsatisfied');
       formData.append('comment', comment);
       if (photoFile) formData.append('new_photo', photoFile);
-
+    
       try {
         const res = await fetch(`${WORKER_URL}/api/card-feedback`, {
           method: 'POST',
@@ -792,10 +800,18 @@
           window.closeFeedbackModal();
           loadMyCard();
         } else {
-          alert('提交失败，请重试');
+          alert('提交失败：' + (data.message || '请重试'));
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '确认提交反馈';
+          }
         }
       } catch (e) {
-        alert('网络错误');
+        alert('网络错误，请稍后重试');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '确认提交反馈';
+        }
       }
     };
   </script>
