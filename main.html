@@ -148,6 +148,7 @@
       padding: 20px;
       text-align: center;
       box-shadow: 0 4px 20px rgba(102,75,58,0.06);
+      margin-bottom: 16px;
     }
 
     .profile-card {
@@ -476,17 +477,17 @@
       });
     }
 
-    // ===== 专属卡片 =====
+    // ===== 专属卡片（支持多张）=====
     async function loadMyCard() {
       const container = document.getElementById('card-content-area');
       container.innerHTML = '<div style="text-align:center;padding:40px;color:#C4B5A9;">加载中...</div>';
-    
+
       try {
         const res = await fetch(`${WORKER_URL}/api/my-card`, {
           headers: { 'X-User-Id': currentUser.id }
         });
         const data = await res.json();
-    
+
         if (!data.success || !data.cards || data.cards.length === 0) {
           container.innerHTML = `
             <div class="card-preview-box" style="padding:48px 24px;">
@@ -499,10 +500,10 @@
           `;
           return;
         }
-    
-        // ---- 遍历所有卡片 ----
+
+        // 遍历所有卡片
         container.innerHTML = data.cards.map(card => `
-          <div class="card-preview-box" style="margin-bottom:16px;">
+          <div class="card-preview-box">
             <img src="${card.image_url}" style="width:100%;max-width:320px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px;">
             <p style="font-size:13px;color:#9A8A7E;margin-bottom:16px;">这是你的专属卡片，请确认是否满意</p>
             <div style="display:flex;gap:12px;justify-content:center;">
@@ -511,9 +512,9 @@
             </div>
           </div>
         `).join('');
-    
+
       } catch (e) {
-        container.innerHTML = `<div class="card-preview-box"><div class="preview-text">加载失败，请稍后重试</div></div>`;
+        container.innerHTML = `<div class="card-preview-box" style="padding:48px 24px;"><div style="font-size:14px;color:#C4B5A9;">加载失败，请稍后重试</div></div>`;
       }
     }
 
