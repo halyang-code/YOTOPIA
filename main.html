@@ -411,26 +411,26 @@
         return;
       }
 
-      // --- 首页：第一只宠物卡片 ---
-      const pet = userPets[0];
-      const photoHtml = pet.photo_url
-        ? `<img class="pet-avatar" src="${pet.photo_url}" alt="${pet.name}">`
-        : `<div class="pet-avatar">🐱</div>`;
-
-      cardContainer.innerHTML = `
-        <div class="pet-card">
-          <div class="pet-row">
-            ${photoHtml}
-            <div>
-              <div class="pet-name">${pet.name || '未命名'}</div>
-              <div class="pet-meta">
-                ${pet.birthday ? '🎂 ' + pet.birthday : ''}
-                ${pet.gender ? ' ｜ ' + (pet.gender === 'male' ? '♂ 男孩' : '♀ 女孩') : ''}
+      // --- 首页：显示所有宠物卡片 ---
+      cardContainer.innerHTML = userPets.map(pet => {
+        const photoHtml = pet.photo_url
+          ? `<img class="pet-avatar" src="${pet.photo_url}" alt="${pet.name}">`
+          : `<div class="pet-avatar">🐱</div>`;
+        return `
+          <div class="pet-card">
+            <div class="pet-row">
+              ${photoHtml}
+              <div>
+                <div class="pet-name">${pet.name || '未命名'}</div>
+                <div class="pet-meta">
+                  ${pet.birthday ? '🎂 ' + pet.birthday : ''}
+                  ${pet.gender ? ' ｜ ' + (pet.gender === 'male' ? '♂ 男孩' : '♀ 女孩') : ''}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
+      }).join('');
 
       // --- 宠物页：所有宠物 + 操作按钮 ---
       let detailHtml = '';
