@@ -278,6 +278,71 @@
     .add-pet-btn button:active {
       opacity: 0.8;
     }
+  
+
+    /* 🆕 弹窗样式 */
+    .modal-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #F0E8E2;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #664B3A;
+      background: #F9F5F2;
+      outline: none;
+      font-family: inherit;
+      transition: border 0.2s;
+    }
+    .modal-input:focus {
+      border-color: #DBC6B4;
+    }
+    .modal-input::placeholder {
+      color: #DBC6B4;
+    }
+    .modal-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #F0E8E2;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #664B3A;
+      background: #F9F5F2;
+      outline: none;
+      font-family: inherit;
+      transition: border 0.2s;
+    }
+    .modal-select:focus {
+      border-color: #DBC6B4;
+    }
+    .modal-btn-primary {
+      flex: 1;
+      padding: 12px;
+      background: #664B3A;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .modal-btn-primary:active { opacity: 0.8; }
+    .modal-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .modal-btn-cancel {
+      flex: 1;
+      padding: 12px;
+      background: #F0E8E2;
+      color: #9A8A7E;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .modal-btn-cancel:active { opacity: 0.7; }
+
+    
   </style>
 </head>
 <body>
@@ -478,30 +543,118 @@
       detailContainer.innerHTML = detailHtml;
     }
 
+    // ===== 🆕 弹窗添加宠物（修复日期格式Bug + 提升体验） =====
     window.addPet = async function() {
-      var name = prompt("请输入宠物名字：");
-      if (!name) return;
-      var birthday = prompt("请输入生日（如 2024-01-01，可留空）：");
-      if (birthday === null) return;
-      var gender = prompt("请输入性别（male 男孩 / female 女孩，可留空）：");
-      if (gender === null) return;
+      // 如果已有弹窗先关掉
+      var old = document.getElementById('add-pet-modal');
+      if (old) old.remove();
 
-      try {
-        var res = await fetch(WORKER_URL + "/api/add-pet", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-User-Id": currentUser.id },
-          body: JSON.stringify({ name: name, birthday: birthday || "", gender: gender || "" })
-        });
-        var d = await res.json();
-        if (d.success) {
-          alert("🐱 添加成功！");
-          loadPets();
-        } else {
-          alert(d.message || "添加失败");
+      var overlay = document.createElement('div');
+      overlay.id = 'add-pet-modal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
+
+      overlay.innerHTML = '\
+        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.12);">\
+          <h3 style="font-size:18px;font-weight:600;color:#664B3A;margin-bottom:4px;">🐱 添加新宠物</h3>\
+          <p style="font-size:13px;color:#9A8A7E;margin-bottom:20px;">填写宠物的基本信息</p>\
+          \
+          <div style="margin-bottom:16px;">\
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">宠物名字 *</label>\
+            <input type="text" id="modal-pet-name" class="modal-input" placeholder="如：小咪">\
+          </div>\
+          \
+          <div style="margin-bottom:16px;">\
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">生日</label>\
+            <input type="date" id="modal-pet-birthday" class="modal-input" style="font-family:inherit;">\
+            <p style="font-size:11px;color:#DBC6B4;margin-top:4px;">不记得日期可以留空 ✨</p>\
+          </div>\
+          \
+          <div style="margin-bottom:24px;">\
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">性别</label>\
+            <select id="modal-pet-gender" class="modal-select">\
+              <option value="">未知</option>\
+              <option value="male">♂ 男孩</option>\
+              <option value="female">♀ 女孩</option>\
+            </select>\
+          </div>\
+          \
+          <div id="modal-pet-error" style="color:#C0392B;font-size:13px;margin-bottom:8px;display:none;"></div>\
+          \
+          <div style="display:flex;gap:10px;">\
+            <button id="btn-cancel-addpet" class="modal-btn-cancel">取消</button>\
+            <button id="btn-confirm-addpet" class="modal-btn-primary">确认添加</button>\
+          </div>\
+        </div>';
+
+      document.body.appendChild(overlay);
+
+      // 自动聚焦名字输入框
+      setTimeout(function() {
+        document.getElementById('modal-pet-name').focus();
+      }, 150);
+
+      // 输入框按回车触发提交
+      document.getElementById('modal-pet-name').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('btn-confirm-addpet').click();
+      });
+
+      // 点击遮罩关闭
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+      });
+
+      // 取消按钮
+      document.getElementById('btn-cancel-addpet').addEventListener('click', function() {
+        overlay.remove();
+      });
+
+      // 提交按钮
+      document.getElementById('btn-confirm-addpet').addEventListener('click', async function() {
+        var name = document.getElementById('modal-pet-name').value.trim();
+        var birthday = document.getElementById('modal-pet-birthday').value;
+        var gender = document.getElementById('modal-pet-gender').value;
+        var errorEl = document.getElementById('modal-pet-error');
+
+        // 前端校验
+        if (!name) {
+          errorEl.textContent = '请输入宠物名字 🐱';
+          errorEl.style.display = 'block';
+          document.getElementById('modal-pet-name').focus();
+          return;
         }
-      } catch (e) {
-        alert("网络错误，请稍后重试");
-      }
+        errorEl.style.display = 'none';
+
+        var btn = document.getElementById('btn-confirm-addpet');
+        btn.disabled = true;
+        btn.textContent = '添加中...';
+
+        try {
+          var res = await fetch(WORKER_URL + '/api/add-pet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUser.id },
+            body: JSON.stringify({
+              name: name,
+              birthday: birthday || '',
+              gender: gender || ''
+            })
+          });
+          var d = await res.json();
+          if (d.success) {
+            overlay.remove();
+            alert('🐱 ' + name + ' 添加成功！');
+            loadPets();
+          } else {
+            errorEl.textContent = d.message || '添加失败，请重试';
+            errorEl.style.display = 'block';
+          }
+        } catch (e) {
+          errorEl.textContent = '网络错误，请稍后重试';
+          errorEl.style.display = 'block';
+        }
+
+        btn.disabled = false;
+        btn.textContent = '确认添加';
+      });
     };
 
     function uploadPhoto(petId) {
