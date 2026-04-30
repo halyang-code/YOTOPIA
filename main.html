@@ -71,6 +71,107 @@
       margin-bottom: 16px;
     }
 
+    /* ===== 🆕 首页大图左右滑动样式 ===== */
+    .home-pet-scroll {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      gap: 16px;
+      padding: 8px 20px 16px;
+      margin: 0 -20px;
+      /* 隐藏滚动条 */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .home-pet-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .home-pet-card {
+      flex: 0 0 calc(100vw - 56px);
+      max-width: 400px;
+      scroll-snap-align: center;
+      background: #fff;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(102,75,58,0.08);
+      transition: transform 0.2s;
+    }
+    .home-pet-card:active {
+      transform: scale(0.98);
+    }
+    .home-pet-photo {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #f0e8e2;
+      display: block;
+      cursor: pointer;
+    }
+    .home-pet-photo-placeholder {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(135deg, #f0e8e2 0%, #e8ddd6 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .home-pet-photo-placeholder:active {
+      background: #ddd0c8;
+    }
+    .home-pet-photo-placeholder .placeholder-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+      opacity: 0.6;
+    }
+    .home-pet-photo-placeholder .placeholder-text {
+      font-size: 14px;
+      color: #9A8A7E;
+      font-weight: 500;
+    }
+    .home-pet-photo-placeholder .placeholder-sub {
+      font-size: 12px;
+      color: #C4B5A9;
+      margin-top: 4px;
+    }
+    .home-pet-info {
+      padding: 16px 20px 20px;
+    }
+    .home-pet-info .pet-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #664B3A;
+    }
+    .home-pet-info .pet-meta {
+      font-size: 13px;
+      color: #9A8A7E;
+      margin-top: 4px;
+    }
+    .home-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 0 4px;
+      padding: 4px 0;
+    }
+    .home-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #DBC6B4;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .home-dot.active {
+      width: 24px;
+      border-radius: 4px;
+      background: #664B3A;
+    }
+    /* ===== 原有的宠物卡片（宠物tab用） ===== */
     .pet-card {
       background: #fff;
       border-radius: 20px;
@@ -242,7 +343,8 @@
 
     .brand-slogan {
       text-align: center;
-      margin-top: 16px;
+      margin-top: 8px;
+      margin-bottom: 8px;
       font-size: 12px;
       color: #DBC6B4;
       letter-spacing: 1px;
@@ -279,7 +381,6 @@
       opacity: 0.8;
     }
 
-    /* 🆕 弹窗通用样式 */
     .modal-input {
       width: 100%;
       padding: 12px 14px;
@@ -295,7 +396,6 @@
     .modal-input:focus {
       border-color: #DBC6B4;
     }
-    /* 🆕 让 date 输入框与其他输入框完全等高 */
     .modal-input[type="date"] {
       height: 48px;
       line-height: 24px;
@@ -350,7 +450,6 @@
     }
     .modal-btn-cancel:active { opacity: 0.7; }
 
-    /* 🆕 全局确认弹窗样式 */
     .yoto-modal-overlay {
       position: fixed;
       inset: 0;
@@ -516,9 +615,7 @@
       loadPets();
     })();
 
-    // ============================================================
-    // 🆕 全局统一确认弹窗 — 取消左 / 确认右
-    // ============================================================
+    // ===== 全局确认弹窗 =====
     function showConfirm(message, onConfirm, onCancel, confirmText, isDanger) {
       var old = document.getElementById('yoto-global-confirm');
       if (old) old.remove();
@@ -543,9 +640,6 @@
 
       document.getElementById('yoto-confirm-cancel').addEventListener('click', function() {
         overlay.remove();
-        if (typeof onConfirm === 'function') {
-          // 不执行确认
-        }
         if (typeof onCancel === 'function') onCancel();
       });
 
@@ -562,7 +656,6 @@
       });
     }
 
-    // 🆕 带输入框的弹窗（用于修改密码）
     function showPromptModal(title, fields, onConfirm) {
       var old = document.getElementById('yoto-prompt-modal');
       if (old) old.remove();
@@ -579,7 +672,7 @@
         var id = 'yoto-prompt-input-' + i;
         inputsHtml += '\
           <div class="yoto-modal-input-box">\
-            <input type="' + inputType + '" id="' + id + '" placeholder="' + placeholder + '" style="' + (f.password ? '' : '') + '">\
+            <input type="' + inputType + '" id="' + id + '" placeholder="' + placeholder + '">\
           </div>';
       }
 
@@ -596,13 +689,11 @@
 
       document.body.appendChild(overlay);
 
-      // 第一个输入框自动聚焦
       setTimeout(function() {
         var firstInput = document.getElementById('yoto-prompt-input-0');
         if (firstInput) firstInput.focus();
       }, 150);
 
-      // 回车键提交
       overlay.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
           document.getElementById('yoto-prompt-ok').click();
@@ -620,7 +711,6 @@
         }
         if (typeof onConfirm === 'function') {
           var result = onConfirm(values);
-          // 如果返回 false 表示验证不通过，不关闭弹窗
           if (result === false) return;
         }
         overlay.remove();
@@ -639,9 +729,7 @@
       }
     }
 
-    // ============================================================
-    // 页面切换
-    // ============================================================
+    // ===== 页面切换 =====
     function switchTab(tab) {
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       document.getElementById('page-' + tab).classList.add('active');
@@ -685,19 +773,118 @@
       renderPets();
     }
 
-    function renderPets() {
-      const cardContainer = document.getElementById('pet-card-container');
-      const detailContainer = document.getElementById('pet-detail-container');
+    // ===== 🆕 首页大图渲染 =====
+    function renderHomePets() {
+      const container = document.getElementById('pet-card-container');
 
       if (!userPets || userPets.length === 0) {
-        cardContainer.innerHTML = `
+        container.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">🐾</div>
             <p>还没有添加宠物<br>点击下方添加你的第一只宠物 🐱</p>
           </div>
           <div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>
         `;
-        detailContainer.innerHTML = `
+        return;
+      }
+
+      // 横向滑动容器
+      var html = '<div class="home-pet-scroll" id="homePetScroll">';
+
+      userPets.forEach(function(pet) {
+        var hasPhoto = pet.photo_url && pet.photo_url !== '';
+
+        var photoSection;
+        if (hasPhoto) {
+          // 🆕 有大图 → 点击跳转到宠物tab
+          photoSection = '<img class="home-pet-photo" src="' + pet.photo_url + '" alt="' + (pet.name || '') + '" onclick="switchTab(\'pets\')">';
+        } else {
+          // 🆕 无照片 → 显示占位提示，点击跳转
+          photoSection = '\
+            <div class="home-pet-photo-placeholder" onclick="switchTab(\'pets\')">\
+              <div class="placeholder-icon">📸</div>\
+              <div class="placeholder-text">前往宠物档案上传照片</div>\
+              <div class="placeholder-sub">点击跳转</div>\
+            </div>';
+        }
+
+        var genderText = '';
+        if (pet.gender === 'male') genderText = ' · 男孩';
+        else if (pet.gender === 'female') genderText = ' · 女孩';
+
+        html += '\
+          <div class="home-pet-card">\
+            ' + photoSection + '\
+            <div class="home-pet-info">\
+              <div class="pet-name">' + (pet.name || '未命名') + '</div>\
+              <div class="pet-meta">\
+                ' + (pet.birthday ? '🎂 ' + pet.birthday : '') + '' + genderText + '\
+              </div>\
+            </div>\
+          </div>';
+      });
+
+      html += '</div>';
+
+      // 🆕 圆点指示器（多宠物时显示）
+      if (userPets.length > 1) {
+        html += '<div class="home-dots" id="homeDots">';
+        for (var i = 0; i < userPets.length; i++) {
+          html += '<div class="home-dot' + (i === 0 ? ' active' : '') + '" data-index="' + i + '"></div>';
+        }
+        html += '</div>';
+      }
+
+      // 添加新宠物按钮
+      html += '<div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>';
+
+      container.innerHTML = html;
+
+      // 🆕 滑动监听 → 更新圆点
+      if (userPets.length > 1) {
+        var scrollEl = document.getElementById('homePetScroll');
+        if (scrollEl) {
+          scrollEl.addEventListener('scroll', function() {
+            var cards = this.querySelectorAll('.home-pet-card');
+            if (cards.length === 0) return;
+            var cardWidth = cards[0].offsetWidth;
+            var gap = 16;
+            var total = cardWidth + gap;
+            var index = Math.round(this.scrollLeft / total);
+            if (index >= cards.length) index = cards.length - 1;
+            if (index < 0) index = 0;
+
+            var dots = document.querySelectorAll('.home-dot');
+            dots.forEach(function(dot, i) {
+              dot.classList.toggle('active', i === index);
+            });
+          });
+
+          // 点击圆点跳转到对应卡片
+          document.querySelectorAll('.home-dot').forEach(function(dot) {
+            dot.addEventListener('click', function() {
+              var index = parseInt(this.getAttribute('data-index'));
+              var cards = scrollEl.querySelectorAll('.home-pet-card');
+              if (cards[index]) {
+                var cardWidth = cards[0].offsetWidth;
+                var gap = 16;
+                scrollEl.scrollTo({
+                  left: index * (cardWidth + gap),
+                  behavior: 'smooth'
+                });
+              }
+            });
+          });
+        }
+      }
+    }
+
+    // ===== 宠物详情页渲染（保持不变） =====
+    function renderDetailPets() {
+      const container = document.getElementById('pet-detail-container');
+
+      if (!userPets || userPets.length === 0) {
+        container.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">🐾</div>
             <p>还没有添加宠物</p>
@@ -707,65 +894,43 @@
         return;
       }
 
-      // 首页
-      cardContainer.innerHTML = userPets.map(pet => {
-        const photoHtml = pet.photo_url
-          ? `<img class="pet-avatar" src="${pet.photo_url}" alt="${pet.name}">`
-          : `<div class="pet-avatar">🐱</div>`;
-        return `
-          <div class="pet-card">
-            <div class="pet-row">
-              ${photoHtml}
-              <div>
-                <div class="pet-name">${pet.name || '未命名'}</div>
-                <div class="pet-meta">
-                  ${pet.birthday ? '🎂 ' + pet.birthday : ''}
-                  ${pet.gender ? ' ｜ ' + (pet.gender === 'male' ? '男孩' : '女孩') : ''}
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
+      var html = '';
+      userPets.forEach(function(p) {
+        var pPhoto = p.photo_url
+          ? '<img class="pet-avatar" src="' + p.photo_url + '" alt="' + p.name + '">'
+          : '<div class="pet-avatar">🐱</div>';
 
-      // 宠物详情页
-      let detailHtml = '';
-      userPets.forEach(p => {
-        const pPhoto = p.photo_url
-          ? `<img class="pet-avatar" src="${p.photo_url}" alt="${p.name}">`
-          : `<div class="pet-avatar">🐱</div>`;
-
-        detailHtml += `
-          <div class="pet-card">
-            <div class="pet-row">
-              ${pPhoto}
-              <div style="flex:1;">
-                <div class="pet-name">${p.name || '未命名'}</div>
-                <div class="pet-meta">
-                  ${p.birthday ? '🎂 ' + p.birthday : ''}
-                  ${p.gender ? ' ｜ ' + (p.gender === 'male' ? '男孩' : '女孩') : ''}
-                </div>
-              </div>
-            </div>
-            <div class="pet-actions">
-              <button onclick="showUploadPhotoConfirm('${p.id}')">📸 上传照片</button>
-              <button onclick="editPet('${p.id}')">✏️ 编辑资料</button>
-              <button onclick="showDeletePetConfirm('${p.id}')" style="background:#FFF0EE;color:#C0392B;">🗑️ 删除</button>
-            </div>
-          </div>
-        `;
+        html += '\
+          <div class="pet-card">\
+            <div class="pet-row">\
+              ' + pPhoto + '\
+              <div style="flex:1;">\
+                <div class="pet-name">' + (p.name || '未命名') + '</div>\
+                <div class="pet-meta">\
+                  ' + (p.birthday ? '🎂 ' + p.birthday : '') + '\
+                  ' + (p.gender ? ' ｜ ' + (p.gender === 'male' ? '男孩' : '女孩') : '') + '\
+                </div>\
+              </div>\
+            </div>\
+            <div class="pet-actions">\
+              <button onclick="showUploadPhotoConfirm(\'' + p.id + '\')">📸 上传照片</button>\
+              <button onclick="editPet(\'' + p.id + '\')">✏️ 编辑资料</button>\
+              <button onclick="showDeletePetConfirm(\'' + p.id + '\')" style="background:#FFF0EE;color:#C0392B;">🗑️ 删除</button>\
+            </div>\
+          </div>';
       });
 
-      detailHtml += `
-        <div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>
-      `;
-
-      detailContainer.innerHTML = detailHtml;
+      html += '<div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>';
+      container.innerHTML = html;
     }
 
-    // ============================================================
-    // 🆕 上传照片 — 先弹自定义确认（取消左 / 确认右）
-    // ============================================================
+    // ===== 统一渲染入口 =====
+    function renderPets() {
+      renderHomePets();
+      renderDetailPets();
+    }
+
+    // ===== 上传照片 =====
     function showUploadPhotoConfirm(petId) {
       var pet = userPets.find(function(p) { return p.id === petId; });
       var petName = pet ? (pet.name || '宠物') : '宠物';
@@ -845,9 +1010,7 @@
       }
     }
 
-    // ============================================================
-    // 🆕 删除宠物 — 自定义确认弹窗
-    // ============================================================
+    // ===== 删除宠物 =====
     function showDeletePetConfirm(petId) {
       var pet = userPets.find(function(p) { return p.id === petId; });
       var petName = pet ? (pet.name || '这只宠物') : '这只宠物';
@@ -881,9 +1044,7 @@
       }
     }
 
-    // ============================================================
-    // 添加宠物弹窗（已有，确认在右、取消在左 ✅）
-    // ============================================================
+    // ===== 添加宠物 =====
     window.addPet = async function() {
       var old = document.getElementById('add-pet-modal');
       if (old) old.remove();
@@ -989,9 +1150,7 @@
       });
     };
 
-    // ============================================================
-    // 编辑宠物弹窗（已有，确认在右、取消在左 ✅）
-    // ============================================================
+    // ===== 编辑宠物 =====
     function editPet(petId) {
       var pet = userPets.find(function(p) { return p.id === petId; });
       if (!pet) return;
@@ -1096,9 +1255,7 @@
       });
     }
 
-    // ============================================================
-    // 卡片相关
-    // ============================================================
+    // ===== 卡片相关 =====
     async function loadMyCard() {
       const container = document.getElementById('card-content-area');
       container.innerHTML = '<div style="text-align:center;padding:40px;color:#C4B5A9;">加载中...</div>';
@@ -1166,7 +1323,6 @@
       }
     }
 
-    // 🆕 满意提交 — 自定义确认弹窗
     function showSatisfiedConfirm(cardId) {
       showConfirm(
         '📝 确定提交「满意」反馈？\n\n提交后不能修改，请确认卡片效果满意后再提交。',
@@ -1201,7 +1357,6 @@
       }
     }
 
-    // 不满意弹窗（已有，取消左、确认右 ✅）
     function openUnsatisfiedModal(cardId) {
       var oldModal = document.getElementById('feedback-modal');
       if (oldModal) oldModal.remove();
@@ -1313,9 +1468,7 @@
       }
     }
 
-    // ============================================================
-    // 🆕 修改密码 — 自定义输入弹窗
-    // ============================================================
+    // ===== 修改密码 =====
     function handleChangePassword() {
       showPromptModal(
         '🔑 修改密码',
@@ -1338,7 +1491,6 @@
             return false;
           }
 
-          // 关闭弹窗后执行异步操作
           setTimeout(function() {
             doChangePassword(oldPw, newPw);
           }, 100);
@@ -1370,17 +1522,11 @@
       }
     }
 
-    // ============================================================
-    // 🆕 退出登录 — 自定义确认弹窗
-    // ============================================================
     function handleLogout() {
       localStorage.removeItem('yotopia_user');
       window.location.href = 'index.html';
     }
 
-    // ============================================================
-    // 我的页面
-    // ============================================================
     function loadProfile() {
       document.getElementById('profile-wechat').textContent = currentUser.wechat_id;
       document.getElementById('profile-name').textContent = currentUser.display_name || currentUser.wechat_id;
