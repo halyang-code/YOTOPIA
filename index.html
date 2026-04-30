@@ -281,8 +281,8 @@
         });
         const data = await res.json();
 
-        if (data.success) {
-          localStorage.setItem('yotopia_admin', 'true');
+        if (data.success && data.token) {
+          localStorage.setItem('yotopia_admin_token', data.token);
           window.location.href = 'admin.html';
         } else {
           showModalMsg(msg, data.message || '登录失败', 'error');
