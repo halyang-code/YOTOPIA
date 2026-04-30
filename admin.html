@@ -1381,10 +1381,12 @@
         if (data.success && data.feedbacks && data.feedbacks.length > 0) {
           container.innerHTML = data.feedbacks.map(f => {
             const isSatisfied = f.satisfaction === 'satisfied';
+            // ⬅️ 新增：如果 display_name 有值就用它，否则用 wechat_id，再没有就用 user_id
+            const userNameToShow = f.display_name ? f.display_name : (f.wechat_id || f.user_id);
             return `
               <div class="feedback-card">
                 <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                  <span style="font-weight:600;color:#664B3A;">${f.wechat_id || f.user_id}</span>
+                  <span style="font-weight:600;color:#664B3A;">${userNameToShow}</span>
                   <span style="font-size:12px;color:#9A8A7E;">${new Date(f.created_at).toLocaleString('zh-CN')}</span>
                 </div>
                 <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;">
