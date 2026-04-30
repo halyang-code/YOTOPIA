@@ -90,34 +90,6 @@
       letter-spacing: 1px;
     }
     .admin-entry a:hover { color: #664B3A; }
-    /* ---- 弹窗 ---- */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-      display: none; align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal-overlay.show { display: flex; }
-    .modal {
-      background: #fff; border-radius: 20px; padding: 32px 28px;
-      width: 90%; max-width: 340px;
-    }
-    .modal h3 { color: #664B3A; text-align: center; margin-bottom: 20px; font-size: 18px; }
-    .modal input {
-      width: 100%; padding: 12px 14px; border: 2px solid #E8DDD6;
-      border-radius: 10px; font-size: 15px; margin-bottom: 12px; outline: none;
-    }
-    .modal input:focus { border-color: #664B3A; }
-    .modal .btn-row { display: flex; gap: 10px; margin-top: 8px; }
-    .modal .btn-row button {
-      flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 15px; cursor: pointer;
-    }
-    .modal .btn-primary { background: #664B3A; color: #DBC6B4; }
-    .modal .btn-secondary { background: #F0E8E2; color: #664B3A; }
-    .modal .modal-msg {
-      padding: 8px 12px; border-radius: 8px; font-size: 12px;
-      margin-bottom: 12px; display: none; text-align: center;
-    }
-    .modal .modal-msg.error { display: block; background: #FFF0EE; color: #C0392B; }
-    .modal .modal-msg.success { display: block; background: #E8F5E9; color: #27AE60; }
     /* ---- 底部 ---- */
     .brand-footer {
       text-align: center; margin-top: 18px;
@@ -157,25 +129,12 @@
 
     <!-- 管理员入口 -->
     <div class="admin-entry">
-      <a onclick="openAdminModal()">🔒 管理员登录</a>
+      <!-- ⬅️ 直接跳转到 admin.html -->
+      <a href="admin.html">🔒 管理员登录</a>
     </div>
 
     <!-- 品牌底标 -->
     <div class="brand-footer"> YOTOPIA ｜ Your Utopia</div>
-  </div>
-
-  <!-- ====== 管理员登录弹窗 ====== -->
-  <div class="modal-overlay" id="admin-modal">
-    <div class="modal">
-      <h3>🔒 管理员登录</h3>
-      <div id="admin-msg" class="modal-msg"></div>
-      <input type="text" id="admin-user" placeholder="管理员账号">
-      <input type="password" id="admin-pass" placeholder="密码">
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="closeAdminModal()">取消</button>
-        <button class="btn-primary" onclick="handleAdminLogin()">登录</button>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -254,44 +213,6 @@
       }
     }
 
-    // ====== 管理员弹窗 ======
-    function openAdminModal() {
-      document.getElementById('admin-modal').classList.add('show');
-      document.getElementById('admin-user').value = '';
-      document.getElementById('admin-pass').value = '';
-      document.getElementById('admin-msg').className = 'modal-msg';
-    }
-
-    function closeAdminModal() {
-      document.getElementById('admin-modal').classList.remove('show');
-    }
-
-    async function handleAdminLogin() {
-      const username = document.getElementById('admin-user').value.trim();
-      const password = document.getElementById('admin-pass').value.trim();
-      const msg = document.getElementById('admin-msg');
-
-      if (!username || !password) { showModalMsg(msg, '请填写完整', 'error'); return; }
-
-      try {
-        const res = await fetch(`${WORKER_URL}/api/admin/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-
-        if (data.success && data.token) {
-          localStorage.setItem('yotopia_admin_token', data.token);
-          window.location.href = 'admin.html';
-        } else {
-          showModalMsg(msg, data.message || '登录失败', 'error');
-        }
-      } catch (e) {
-        showModalMsg(msg, '网络错误', 'error');
-      }
-    }
-
     // ====== 工具 ======
     function showMsg(el, text, type) {
       el.textContent = text;
@@ -299,17 +220,10 @@
       setTimeout(() => { el.className = 'msg'; }, 5000);
     }
 
-    function showModalMsg(el, text, type) {
-      el.textContent = text;
-      el.className = 'modal-msg ' + type;
-      setTimeout(() => { el.className = 'modal-msg'; }, 4000);
-    }
-
+    // ⬅️ 监听回车键（只保留用户登录逻辑）
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
-        const modalOpen = document.getElementById('admin-modal').classList.contains('show');
-        if (modalOpen) handleAdminLogin();
-        else handleLogin();
+        handleLogin();
       }
     });
 
