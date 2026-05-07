@@ -1346,12 +1346,20 @@
           body: formData
         });
         const data = await res.json();
-        if (data.success) {
+        if (data.closed) {
+          showConfirm(data.message, null, null, '知道了', false);
+        } else if (data.success) {
           addFeedbackCardId(cardId);
           showConfirm('🎉 反馈已提交！感谢你的确认 ✅', function() { loadMyCard(); }, null, '好的', false);
         } else {
           showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
         }
+        // if (data.success) {
+        //   addFeedbackCardId(cardId);
+        //   showConfirm('🎉 反馈已提交！感谢你的确认 ✅', function() { loadMyCard(); }, null, '好的', false);
+        // } else {
+        //   showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
+        // }
       } catch (e) {
         showConfirm('网络错误，请稍后重试', null, null, '知道了', false);
       }
@@ -1450,7 +1458,11 @@
           body: formData
         });
         var data = await res.json();
-        if (data.success) {
+        if (data.closed) {
+          var modal = document.getElementById('feedback-modal');
+          if (modal) modal.remove();
+          showConfirm(data.message, null, null, '知道了', false);
+        } else if (data.success) {
           addFeedbackCardId(cardId);
           var modal = document.getElementById('feedback-modal');
           if (modal) modal.remove();
@@ -1458,6 +1470,14 @@
         } else {
           showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
         }
+        // if (data.success) {
+        //   addFeedbackCardId(cardId);
+        //   var modal = document.getElementById('feedback-modal');
+        //   if (modal) modal.remove();
+        //   showConfirm('📩 反馈已提交！管理员会尽快修改 ✅', function() { loadMyCard(); }, null, '好的', false);
+        // } else {
+        //   showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
+        // }
       } catch (e) {
         showConfirm('网络错误，请稍后重试', null, null, '知道了', false);
       } finally {
