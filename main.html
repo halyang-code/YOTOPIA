@@ -70,8 +70,44 @@
       color: #664B3A;
       margin-bottom: 16px;
     }
+    
+    /* ===== 新增：首页性格测试入口卡片 ===== */
+    .promo-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 24px rgba(102,75,58,0.08);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .promo-card:active {
+      transform: scale(0.98);
+    }
+    .promo-card .promo-icon {
+      font-size: 36px;
+      flex-shrink: 0;
+    }
+    .promo-card .promo-text h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #664B3A;
+    }
+    .promo-card .promo-text p {
+      font-size: 13px;
+      color: #9A8A7E;
+      margin-top: 2px;
+    }
+    .promo-card .promo-arrow {
+      margin-left: auto;
+      font-size: 18px;
+      color: #DBC6B4;
+    }
 
-    /* ===== 🆕 首页大图左右滑动样式 ===== */
+    /* ===== 首页大图左右滑动样式 ===== */
     .home-pet-scroll {
       display: flex;
       overflow-x: auto;
@@ -81,7 +117,6 @@
       gap: 16px;
       padding: 8px 20px 16px;
       margin: 0 -20px;
-      /* 隐藏滚动条 */
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
@@ -547,6 +582,16 @@
   </nav>
 
   <div id="page-home" class="page active">
+    <!-- ===== 修改点 1: 新增性格测试入口卡片 ===== -->
+    <div class="promo-card" onclick="goToPersonalityTest()">
+        <div class="promo-icon">🧬</div>
+        <div class="promo-text">
+            <h3>宠物性格测试</h3>
+            <p>发现你家毛孩子的隐藏性格</p>
+        </div>
+        <div class="promo-arrow">→</div>
+    </div>
+    
     <div id="pet-card-container"></div>
     <div class="brand-slogan">让陪伴，融入自然</div>
   </div>
@@ -572,6 +617,11 @@
         <span class="label">昵称</span>
         <span class="value" id="profile-name">-</span>
       </div>
+      <!-- ===== 修改点 2: 新增专属卡片入口 ===== -->
+      <div class="profile-row">
+        <span class="label">专属卡片</span>
+        <button onclick="switchTab('card')">查看 →</button>
+      </div>
       <div class="profile-row">
         <span class="label">修改密码</span>
         <button onclick="handleChangePassword()">修改 →</button>
@@ -589,9 +639,10 @@
       <span class="tab-icon">🐱</span>
       <span class="tab-label">宠物</span>
     </div>
-    <div class="tab-item" onclick="switchTab('card')" data-tab="card">
-      <span class="tab-icon">🎴</span>
-      <span class="tab-label">专属卡片</span>
+    <!-- ===== 修改点 3: 底部导航栏替换为性格测试 ===== -->
+    <div class="tab-item" onclick="goToPersonalityTest()" data-tab="test">
+      <span class="tab-icon">🧬</span>
+      <span class="tab-label">性格测试</span>
     </div>
     <div class="tab-item" onclick="switchTab('profile')" data-tab="profile">
       <span class="tab-icon">👤</span>
@@ -626,15 +677,15 @@
 
       var safeMsg = (message || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
 
-      overlay.innerHTML = '\
-        <div class="yoto-modal-box">\
-          <div class="yoto-modal-title">⚠️ 确认</div>\
-          <div class="yoto-modal-body">' + safeMsg + '</div>\
-          <div class="yoto-modal-actions">\
-            <button class="btn-cancel" id="yoto-confirm-cancel">取消</button>\
-            <button class="btn-confirm' + (isDanger ? ' danger' : '') + '" id="yoto-confirm-ok">' + (confirmText || '确认') + '</button>\
-          </div>\
-        </div>';
+      overlay.innerHTML = `
+        <div class="yoto-modal-box">
+          <div class="yoto-modal-title">⚠️ 确认</div>
+          <div class="yoto-modal-body">${safeMsg}</div>
+          <div class="yoto-modal-actions">
+            <button class="btn-cancel" id="yoto-confirm-cancel">取消</button>
+            <button class="btn-confirm ${isDanger ? ' danger' : ''}" id="yoto-confirm-ok">${confirmText || '确认'}</button>
+          </div>
+        </div>`;
 
       document.body.appendChild(overlay);
 
@@ -670,22 +721,22 @@
         var inputType = f.type || 'text';
         var placeholder = f.placeholder || '';
         var id = 'yoto-prompt-input-' + i;
-        inputsHtml += '\
-          <div class="yoto-modal-input-box">\
-            <input type="' + inputType + '" id="' + id + '" placeholder="' + placeholder + '">\
-          </div>';
+        inputsHtml += `
+          <div class="yoto-modal-input-box">
+            <input type="${inputType}" id="${id}" placeholder="${placeholder}">
+          </div>`;
       }
 
-      overlay.innerHTML = '\
-        <div class="yoto-modal-box">\
-          <div class="yoto-modal-title">' + title + '</div>\
-          <div class="yoto-modal-body" id="yoto-prompt-error" style="color:#C0392B;display:none;"></div>\
-          ' + inputsHtml + '\
-          <div class="yoto-modal-actions">\
-            <button class="btn-cancel" id="yoto-prompt-cancel">取消</button>\
-            <button class="btn-confirm" id="yoto-prompt-ok">确认</button>\
-          </div>\
-        </div>';
+      overlay.innerHTML = `
+        <div class="yoto-modal-box">
+          <div class="yoto-modal-title">${title}</div>
+          <div class="yoto-modal-body" id="yoto-prompt-error" style="color:#C0392B;display:none;"></div>
+          ${inputsHtml}
+          <div class="yoto-modal-actions">
+            <button class="btn-cancel" id="yoto-prompt-cancel">取消</button>
+            <button class="btn-confirm" id="yoto-prompt-ok">确认</button>
+          </div>
+        </div>`;
 
       document.body.appendChild(overlay);
 
@@ -729,13 +780,28 @@
       }
     }
 
-    // ===== 页面切换 =====
+    // ===== 修改点 4: 新增跳转到性格测试的函数 =====
+    function goToPersonalityTest() {
+        if (currentUser && currentUser.id) {
+            window.location.href = `personality.html?user_id=${currentUser.id}`;
+        } else {
+            // 如果因为某些原因 currentUser 不存在，则不带参数跳转
+            window.location.href = 'personality.html';
+        }
+    }
+
+    // ===== 修改点 5: 修改页面切换逻辑 =====
     function switchTab(tab) {
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       document.getElementById('page-' + tab).classList.add('active');
+      
       document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
-      const activeTab = document.querySelector(`.tab-item[data-tab="${tab}"]`);
+      
+      // 如果是查看专属卡片，则高亮“我的”tab
+      let activeTabName = (tab === 'card') ? 'profile' : tab;
+      const activeTab = document.querySelector(`.tab-item[data-tab="${activeTabName}"]`);
       if (activeTab) activeTab.classList.add('active');
+      
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tab === 'card') {
@@ -773,7 +839,7 @@
       renderPets();
     }
 
-    // ===== 🆕 首页大图渲染 =====
+    // ===== 首页大图渲染 =====
     function renderHomePets() {
       const container = document.getElementById('pet-card-container');
 
@@ -788,7 +854,6 @@
         return;
       }
 
-      // 横向滑动容器
       var html = '<div class="home-pet-scroll" id="homePetScroll">';
 
       userPets.forEach(function(pet) {
@@ -796,51 +861,46 @@
 
         var photoSection;
         if (hasPhoto) {
-          // 🆕 有大图 → 点击跳转到宠物tab
-          photoSection = '<img class="home-pet-photo" src="' + pet.photo_url + '" alt="' + (pet.name || '') + '" onclick="switchTab(\'pets\')">';
+          photoSection = `<img class="home-pet-photo" src="${pet.photo_url}" alt="${pet.name || ''}" onclick="switchTab('pets')">`;
         } else {
-          // 🆕 无照片 → 显示占位提示，点击跳转
-          photoSection = '\
-            <div class="home-pet-photo-placeholder" onclick="switchTab(\'pets\')">\
-              <div class="placeholder-icon">📸</div>\
-              <div class="placeholder-text">前往宠物档案上传照片</div>\
-              <div class="placeholder-sub">点击跳转</div>\
-            </div>';
+          photoSection = `
+            <div class="home-pet-photo-placeholder" onclick="switchTab('pets')">
+              <div class="placeholder-icon">📸</div>
+              <div class="placeholder-text">前往宠物档案上传照片</div>
+              <div class="placeholder-sub">点击跳转</div>
+            </div>`;
         }
 
         var genderText = '';
         if (pet.gender === 'male') genderText = ' · 男孩';
         else if (pet.gender === 'female') genderText = ' · 女孩';
 
-        html += '\
-          <div class="home-pet-card">\
-            ' + photoSection + '\
-            <div class="home-pet-info">\
-              <div class="pet-name">' + (pet.name || '未命名') + '</div>\
-              <div class="pet-meta">\
-                ' + (pet.birthday ? '🎂 ' + pet.birthday : '') + '' + genderText + '\
-              </div>\
-            </div>\
-          </div>';
+        html += `
+          <div class="home-pet-card">
+            ${photoSection}
+            <div class="home-pet-info">
+              <div class="pet-name">${pet.name || '未命名'}</div>
+              <div class="pet-meta">
+                ${pet.birthday ? '🎂 ' + pet.birthday : ''}${genderText}
+              </div>
+            </div>
+          </div>`;
       });
 
       html += '</div>';
 
-      // 🆕 圆点指示器（多宠物时显示）
       if (userPets.length > 1) {
         html += '<div class="home-dots" id="homeDots">';
         for (var i = 0; i < userPets.length; i++) {
-          html += '<div class="home-dot' + (i === 0 ? ' active' : '') + '" data-index="' + i + '"></div>';
+          html += `<div class="home-dot ${i === 0 ? ' active' : ''}" data-index="${i}"></div>`;
         }
         html += '</div>';
       }
 
-      // 添加新宠物按钮
       html += '<div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>';
 
       container.innerHTML = html;
 
-      // 🆕 滑动监听 → 更新圆点
       if (userPets.length > 1) {
         var scrollEl = document.getElementById('homePetScroll');
         if (scrollEl) {
@@ -860,7 +920,6 @@
             });
           });
 
-          // 点击圆点跳转到对应卡片
           document.querySelectorAll('.home-dot').forEach(function(dot) {
             dot.addEventListener('click', function() {
               var index = parseInt(this.getAttribute('data-index'));
@@ -879,7 +938,7 @@
       }
     }
 
-    // ===== 宠物详情页渲染（保持不变） =====
+    // ===== 宠物详情页渲染 =====
     function renderDetailPets() {
       const container = document.getElementById('pet-detail-container');
 
@@ -897,27 +956,27 @@
       var html = '';
       userPets.forEach(function(p) {
         var pPhoto = p.photo_url
-          ? '<img class="pet-avatar" src="' + p.photo_url + '" alt="' + p.name + '">'
+          ? `<img class="pet-avatar" src="${p.photo_url}" alt="${p.name}">`
           : '<div class="pet-avatar">🐱</div>';
 
-        html += '\
-          <div class="pet-card">\
-            <div class="pet-row">\
-              ' + pPhoto + '\
-              <div style="flex:1;">\
-                <div class="pet-name">' + (p.name || '未命名') + '</div>\
-                <div class="pet-meta">\
-                  ' + (p.birthday ? '🎂 ' + p.birthday : '') + '\
-                  ' + (p.gender ? ' ｜ ' + (p.gender === 'male' ? '男孩' : '女孩') : '') + '\
-                </div>\
-              </div>\
-            </div>\
-            <div class="pet-actions">\
-              <button onclick="showUploadPhotoConfirm(\'' + p.id + '\')">📸 上传照片</button>\
-              <button onclick="editPet(\'' + p.id + '\')">✏️ 编辑资料</button>\
-              <button onclick="showDeletePetConfirm(\'' + p.id + '\')" style="background:#FFF0EE;color:#C0392B;">🗑️ 删除</button>\
-            </div>\
-          </div>';
+        html += `
+          <div class="pet-card">
+            <div class="pet-row">
+              ${pPhoto}
+              <div style="flex:1;">
+                <div class="pet-name">${p.name || '未命名'}</div>
+                <div class="pet-meta">
+                  ${p.birthday ? '🎂 ' + p.birthday : ''}
+                  ${p.gender ? ' ｜ ' + (p.gender === 'male' ? '男孩' : '女孩') : ''}
+                </div>
+              </div>
+            </div>
+            <div class="pet-actions">
+              <button onclick="showUploadPhotoConfirm('${p.id}')">📸 上传照片</button>
+              <button onclick="editPet('${p.id}')">✏️ 编辑资料</button>
+              <button onclick="showDeletePetConfirm('${p.id}')" style="background:#FFF0EE;color:#C0392B;">🗑️ 删除</button>
+            </div>
+          </div>`;
       });
 
       html += '<div class="add-pet-btn"><button onclick="addPet()">➕ 添加新宠物</button></div>';
@@ -936,7 +995,7 @@
       var petName = pet ? (pet.name || '宠物') : '宠物';
 
       showConfirm(
-        '📸 为「' + petName + '」上传照片\n\n⚠️ 建议使用 2MB 以内的清晰照片\n照片过大可能导致上传速度变慢',
+        `📸 为「${petName}」上传照片\n\n⚠️ 建议使用 2MB 以内的清晰照片\n照片过大可能导致上传速度变慢`,
         function() {
           actuallyUploadPhoto(petId);
         },
@@ -959,7 +1018,7 @@
 
         if (file.size > 5 * 1024 * 1024) {
           showConfirm(
-            '⚠️ 照片大小约 ' + sizeMB + 'MB\n\n超过 5MB 可能会上传很慢，是否继续？',
+            `⚠️ 照片大小约 ${sizeMB}MB\n\n超过 5MB 可能会上传很慢，是否继续？`,
             function() { doUpload(petId, file); },
             null,
             '继续上传',
@@ -968,7 +1027,7 @@
           return;
         } else if (file.size > 2 * 1024 * 1024) {
           showConfirm(
-            '⏳ 照片大小约 ' + sizeMB + 'MB\n\n超过 2MB 上传速度可能较慢，是否继续？',
+            `⏳ 照片大小约 ${sizeMB}MB\n\n超过 2MB 上传速度可能较慢，是否继续？`,
             function() { doUpload(petId, file); },
             null,
             '继续上传',
@@ -1016,7 +1075,7 @@
       var petName = pet ? (pet.name || '这只宠物') : '这只宠物';
 
       showConfirm(
-        '⚠️ 确定要删除「' + petName + '」吗？\n\n删除后不可恢复！',
+        `⚠️ 确定要删除「${petName}」吗？\n\n删除后不可恢复！`,
         function() {
           actuallyDeletePet(petId);
         },
@@ -1053,38 +1112,38 @@
       overlay.id = 'add-pet-modal';
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
 
-      overlay.innerHTML = '\
-        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.12);">\
-          <h3 style="font-size:18px;font-weight:600;color:#664B3A;margin-bottom:4px;">🐱 添加新宠物</h3>\
-          <p style="font-size:13px;color:#9A8A7E;margin-bottom:20px;">填写宠物的基本信息</p>\
-          \
-          <div style="margin-bottom:16px;">\
-            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">宠物名字 *</label>\
-            <input type="text" id="modal-pet-name" class="modal-input" placeholder="如：小咪">\
-          </div>\
-          \
-          <div style="margin-bottom:16px;">\
-            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">生日</label>\
-            <input type="date" id="modal-pet-birthday" class="modal-input" style="font-family:inherit;">\
-            <p style="font-size:11px;color:#DBC6B4;margin-top:4px;">不记得日期可以留空 ✨</p>\
-          </div>\
-          \
-          <div style="margin-bottom:24px;">\
-            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">性别</label>\
-            <select id="modal-pet-gender" class="modal-select">\
-              <option value="">未知</option>\
-              <option value="male">男孩</option>\
-              <option value="female">女孩</option>\
-            </select>\
-          </div>\
-          \
-          <div id="modal-pet-error" style="color:#C0392B;font-size:13px;margin-bottom:8px;display:none;"></div>\
-          \
-          <div style="display:flex;gap:10px;">\
-            <button id="btn-cancel-addpet" class="modal-btn-cancel">取消</button>\
-            <button id="btn-confirm-addpet" class="modal-btn-primary">确认添加</button>\
-          </div>\
-        </div>';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.12);">
+          <h3 style="font-size:18px;font-weight:600;color:#664B3A;margin-bottom:4px;">🐱 添加新宠物</h3>
+          <p style="font-size:13px;color:#9A8A7E;margin-bottom:20px;">填写宠物的基本信息</p>
+          
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">宠物名字 *</label>
+            <input type="text" id="modal-pet-name" class="modal-input" placeholder="如：小咪">
+          </div>
+          
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">生日</label>
+            <input type="date" id="modal-pet-birthday" class="modal-input" style="font-family:inherit;">
+            <p style="font-size:11px;color:#DBC6B4;margin-top:4px;">不记得日期可以留空 ✨</p>
+          </div>
+          
+          <div style="margin-bottom:24px;">
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">性别</label>
+            <select id="modal-pet-gender" class="modal-select">
+              <option value="">未知</option>
+              <option value="male">男孩</option>
+              <option value="female">女孩</option>
+            </select>
+          </div>
+          
+          <div id="modal-pet-error" style="color:#C0392B;font-size:13px;margin-bottom:8px;display:none;"></div>
+          
+          <div style="display:flex;gap:10px;">
+            <button id="btn-cancel-addpet" class="modal-btn-cancel">取消</button>
+            <button id="btn-confirm-addpet" class="modal-btn-primary">确认添加</button>
+          </div>
+        </div>`;
 
       document.body.appendChild(overlay);
 
@@ -1135,7 +1194,7 @@
           var d = await res.json();
           if (d.success) {
             overlay.remove();
-            showConfirm('🐱 ' + name + ' 添加成功！', function() { loadPets(); }, null, '好的', false);
+            showConfirm(`🐱 ${name} 添加成功！`, function() { loadPets(); }, null, '好的', false);
           } else {
             errorEl.textContent = d.message || '添加失败，请重试';
             errorEl.style.display = 'block';
@@ -1162,38 +1221,38 @@
       overlay.id = 'edit-pet-modal';
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;';
 
-      overlay.innerHTML = '\
-        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.12);">\
-          <h3 style="font-size:18px;font-weight:600;color:#664B3A;margin-bottom:4px;">✏️ 编辑宠物</h3>\
-          <p style="font-size:13px;color:#9A8A7E;margin-bottom:20px;">修改 ' + (pet.name || '宠物') + ' 的资料</p>\
-          \
-          <div style="margin-bottom:16px;">\
-            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">宠物名字 *</label>\
-            <input type="text" id="edit-pet-name" class="modal-input" value="' + (pet.name || '') + '" placeholder="如：小咪">\
-          </div>\
-          \
-          <div style="margin-bottom:16px;">\
-            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">生日</label>\
-            <input type="date" id="edit-pet-birthday" class="modal-input" style="font-family:inherit;" value="' + (pet.birthday || '') + '">\
-            <p style="font-size:11px;color:#DBC6B4;margin-top:4px;">不记得日期可以留空 ✨</p>\
-          </div>\
-          \
-          <div style="margin-bottom:24px;">\
-            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">性别</label>\
-            <select id="edit-pet-gender" class="modal-select">\
-              <option value="">未知</option>\
-              <option value="male" ' + (pet.gender === 'male' ? 'selected' : '') + '>男孩</option>\
-              <option value="female" ' + (pet.gender === 'female' ? 'selected' : '') + '>女孩</option>\
-            </select>\
-          </div>\
-          \
-          <div id="edit-pet-error" style="color:#C0392B;font-size:13px;margin-bottom:8px;display:none;"></div>\
-          \
-          <div style="display:flex;gap:10px;">\
-            <button id="btn-cancel-editpet" class="modal-btn-cancel">取消</button>\
-            <button id="btn-confirm-editpet" class="modal-btn-primary">保存修改</button>\
-          </div>\
-        </div>';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.12);">
+          <h3 style="font-size:18px;font-weight:600;color:#664B3A;margin-bottom:4px;">✏️ 编辑宠物</h3>
+          <p style="font-size:13px;color:#9A8A7E;margin-bottom:20px;">修改 ${pet.name || '宠物'} 的资料</p>
+          
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">宠物名字 *</label>
+            <input type="text" id="edit-pet-name" class="modal-input" value="${pet.name || ''}" placeholder="如：小咪">
+          </div>
+          
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">生日</label>
+            <input type="date" id="edit-pet-birthday" class="modal-input" style="font-family:inherit;" value="${pet.birthday || ''}">
+            <p style="font-size:11px;color:#DBC6B4;margin-top:4px;">不记得日期可以留空 ✨</p>
+          </div>
+          
+          <div style="margin-bottom:24px;">
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:6px;">性别</label>
+            <select id="edit-pet-gender" class="modal-select">
+              <option value="">未知</option>
+              <option value="male" ${pet.gender === 'male' ? 'selected' : ''}>男孩</option>
+              <option value="female" ${pet.gender === 'female' ? 'selected' : ''}>女孩</option>
+            </select>
+          </div>
+          
+          <div id="edit-pet-error" style="color:#C0392B;font-size:13px;margin-bottom:8px;display:none;"></div>
+          
+          <div style="display:flex;gap:10px;">
+            <button id="btn-cancel-editpet" class="modal-btn-cancel">取消</button>
+            <button id="btn-confirm-editpet" class="modal-btn-primary">保存修改</button>
+          </div>
+        </div>`;
 
       document.body.appendChild(overlay);
 
@@ -1240,7 +1299,7 @@
           var d = await res.json();
           if (d.success) {
             overlay.remove();
-            showConfirm('✅ ' + name + ' 的资料已更新！', function() { loadPets(); }, null, '好的', false);
+            showConfirm(`✅ ${name} 的资料已更新！`, function() { loadPets(); }, null, '好的', false);
           } else {
             errorEl.textContent = d.message || '更新失败，请重试';
             errorEl.style.display = 'block';
@@ -1354,12 +1413,6 @@
         } else {
           showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
         }
-        // if (data.success) {
-        //   addFeedbackCardId(cardId);
-        //   showConfirm('🎉 反馈已提交！感谢你的确认 ✅', function() { loadMyCard(); }, null, '好的', false);
-        // } else {
-        //   showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
-        // }
       } catch (e) {
         showConfirm('网络错误，请稍后重试', null, null, '知道了', false);
       }
@@ -1373,27 +1426,27 @@
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;';
       overlay.id = 'feedback-modal';
 
-      overlay.innerHTML = '\
-        <div style="background:#fff;border-radius:20px;padding:24px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;">\
-          <h3 style="font-size:17px;color:#664B3A;margin-bottom:16px;">🔄 需要修改的内容</h3>\
-          <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:4px;">请描述不满意的地方</label>\
-          <textarea id="feedback-comment" rows="4" style="width:100%;padding:12px;border:1.5px solid #F0E8E2;border-radius:10px;font-size:14px;color:#664B3A;background:#F9F5F2;outline:none;margin-bottom:16px;resize:vertical;" placeholder="例如：颜色不够柔和、字体太大、宠物照片不太像..."></textarea>\
-          <div style="margin-bottom:16px;">\
-            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:8px;">\
-              <input type="checkbox" id="feedback-replace-photo">\
-              对图片不满意，我想上传一张新照片\
-            </label>\
-            <div id="feedback-photo-area" style="display:none;">\
-              <input type="file" id="feedback-photo-input" accept="image/*" style="font-size:13px;color:#664B3A;">\
-              <img id="feedback-photo-preview" style="width:100%;max-width:200px;border-radius:10px;margin-top:8px;display:none;">\
-            </div>\
-          </div>\
-          <p style="font-size:12px;color:#9A8A7E;margin-bottom:12px;">提交后不能修改，请确认内容无误</p>\
-          <div style="display:flex;gap:10px;">\
-            <button id="btn-cancel-feedback" style="flex:1;padding:12px;background:#F0E8E2;color:#9A8A7E;border:none;border-radius:10px;font-size:14px;cursor:pointer;">取消</button>\
-            <button id="btn-submit-feedback" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">确认提交反馈</button>\
-          </div>\
-        </div>';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:20px;padding:24px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;">
+          <h3 style="font-size:17px;color:#664B3A;margin-bottom:16px;">🔄 需要修改的内容</h3>
+          <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:4px;">请描述不满意的地方</label>
+          <textarea id="feedback-comment" rows="4" style="width:100%;padding:12px;border:1.5px solid #F0E8E2;border-radius:10px;font-size:14px;color:#664B3A;background:#F9F5F2;outline:none;margin-bottom:16px;resize:vertical;" placeholder="例如：颜色不够柔和、字体太大、宠物照片不太像..."></textarea>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;color:#9A8A7E;display:block;margin-bottom:8px;">
+              <input type="checkbox" id="feedback-replace-photo">
+              对图片不满意，我想上传一张新照片
+            </label>
+            <div id="feedback-photo-area" style="display:none;">
+              <input type="file" id="feedback-photo-input" accept="image/*" style="font-size:13px;color:#664B3A;">
+              <img id="feedback-photo-preview" style="width:100%;max-width:200px;border-radius:10px;margin-top:8px;display:none;">
+            </div>
+          </div>
+          <p style="font-size:12px;color:#9A8A7E;margin-bottom:12px;">提交后不能修改，请确认内容无误</p>
+          <div style="display:flex;gap:10px;">
+            <button id="btn-cancel-feedback" style="flex:1;padding:12px;background:#F0E8E2;color:#9A8A7E;border:none;border-radius:10px;font-size:14px;cursor:pointer;">取消</button>
+            <button id="btn-submit-feedback" style="flex:1;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">确认提交反馈</button>
+          </div>
+        </div>`;
 
       document.body.appendChild(overlay);
 
@@ -1470,14 +1523,6 @@
         } else {
           showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
         }
-        // if (data.success) {
-        //   addFeedbackCardId(cardId);
-        //   var modal = document.getElementById('feedback-modal');
-        //   if (modal) modal.remove();
-        //   showConfirm('📩 反馈已提交！管理员会尽快修改 ✅', function() { loadMyCard(); }, null, '好的', false);
-        // } else {
-        //   showConfirm('提交失败：' + (data.message || '请重试'), null, null, '知道了', false);
-        // }
       } catch (e) {
         showConfirm('网络错误，请稍后重试', null, null, '知道了', false);
       } finally {

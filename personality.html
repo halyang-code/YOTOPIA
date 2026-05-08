@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>性格测试 - YOTOPIA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+            background: #F5EDE8;
+            min-height: 100vh;
+            color: #664B3A;
+        }
+
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: #F5EDE8;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(102,75,58,0.06);
+        }
+        .top-nav .brand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #664B3A;
+            letter-spacing: 1px;
+        }
+        .top-nav .back-btn {
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #9A8A7E;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .top-nav .back-btn:active { background: rgba(102,75,58,0.08); }
+
+        .container { padding: 24px 20px 40px; max-width: 480px; margin: 0 auto; }
+
+        .loading { text-align: center; padding: 40px; color: #C4B5A9; font-size: 14px; }
+
+        /* ===== 预览区（未登录用户） ===== */
+        .preview-section { display: none; }
+        .preview-section.show { display: block; }
+
+        .preview-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 32px 24px;
+            box-shadow: 0 4px 20px rgba(102,75,58,0.06);
+            text-align: center;
+        }
+        .preview-card .main-icon { font-size: 48px; margin-bottom: 8px; }
+        .preview-card h1 { font-size: 22px; font-weight: 700; color: #664B3A; margin-bottom: 4px; }
+        .preview-card .subtitle { font-size: 13px; color: #9A8A7E; margin-bottom: 20px; }
+        .preview-card .desc { font-size: 14px; color: #9A8A7E; line-height: 1.8; margin-bottom: 20px; }
+
+        .preview-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .preview-result-card {
+            background: #F9F5F2;
+            border-radius: 14px;
+            padding: 16px 10px;
+            text-align: center;
+        }
+        .preview-result-card .r-icon { font-size: 32px; margin-bottom: 4px; }
+        .preview-result-card .r-label { font-size: 14px; font-weight: 600; color: #664B3A; }
+        .preview-result-card .r-desc { font-size: 11px; color: #C4B5A9; margin-top: 2px; }
+
+        .btn-primary {
+            display: block;
+            width: 100%;
+            background: #664B3A;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-primary:active { opacity: 0.8; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            display: block;
+            width: 100%;
+            background: #fff;
+            color: #664B3A;
+            border: 1.5px solid #DBC6B4;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 12px;
+        }
+        .btn-secondary:active { background: #F5EDE8; }
+
+        /* ===== 用户信息栏 ===== */
+        .user-info-bar {
+            display: none;
+            background: #fff;
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(102,75,58,0.06);
+            align-items: center;
+            gap: 12px;
+        }
+        .user-info-bar.show { display: flex; }
+        .user-info-bar .avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: #F0E8E2;
+            display: block;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .user-info-bar .info-text { flex: 1; min-width: 0; }
+        .user-info-bar .info-text .name { font-size: 15px; font-weight: 600; color: #664B3A; }
+        .user-info-bar .info-text .tag { font-size: 11px; color: #9A8A7E; margin-top: 2px; }
+        .user-info-bar .logout-btn {
+            background: none;
+            border: none;
+            color: #C4B5A9;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            flex-shrink: 0;
+        }
+
+        /* ===== 测试区 ===== */
+        .test-section { display: none; }
+        .test-section.show { display: block; }
+
+        .test-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 28px 24px;
+            box-shadow: 0 4px 20px rgba(102,75,58,0.06);
+        }
+        .test-card .q-number {
+            font-size: 12px;
+            color: #C4B5A9;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .test-card .q-text {
+            font-size: 17px;
+            font-weight: 600;
+            color: #664B3A;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: #F0E8E2;
+            border-radius: 2px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: #664B3A;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            background: #F9F5F2;
+            border: 1.5px solid transparent;
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            font-size: 15px;
+            color: #664B3A;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .option-btn:active {
+            border-color: #DBC6B4;
+            background: #F5EDE8;
+        }
+        .option-btn.selected {
+            border-color: #664B3A;
+            background: #FFF8F0;
+        }
+
+        /* ===== 结果区 ===== */
+        .result-section { display: none; }
+        .result-section.show { display: block; }
+
+        .result-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 32px 24px;
+            box-shadow: 0 4px 20px rgba(102,75,58,0.06);
+            text-align: center;
+        }
+        .result-card .result-icon-big { font-size: 72px; margin-bottom: 16px; }
+        .result-card .result-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: #664B3A;
+            margin-bottom: 6px;
+        }
+        .result-card .result-subtitle {
+            font-size: 14px;
+            color: #9A8A7E;
+            margin-bottom: 16px;
+        }
+        .result-card .result-desc {
+            font-size: 14px;
+            color: #5A4A3E;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            text-align: left;
+            background: #FAF8F6;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .score-bars { margin: 16px 0 20px; }
+        .score-row { margin-bottom: 10px; }
+        .score-row .label-row {
+            display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;
+        }
+        .score-row .label-row .name { color: #5A4A3E; font-weight: 500; }
+        .score-row .label-row .val { color: #9A8A7E; }
+        .score-bar-bg {
+            height: 10px; background: #F0EBE6; border-radius: 5px; overflow: hidden;
+        }
+        .score-bar-fill {
+            height: 100%; border-radius: 5px; transition: width 0.6s ease;
+        }
+        .fill-energy { background: #E8A87C; }
+        .fill-social { background: #C38D9E; }
+        .fill-bold   { background: #664B3A; }
+
+        .result-quote {
+            font-size: 13px; color: #9A8A7E; font-style: italic;
+            padding: 12px; background: #FFF8F0; border-radius: 10px; margin-bottom: 16px;
+        }
+
+        .breed-match-box {
+            background: #F5F0EB; border-radius: 12px; padding: 12px 14px; margin: 12px 0;
+            text-align: left;
+        }
+        .breed-match-box .match-label { font-size: 14px; font-weight: 600; color: #664B3A; }
+        .breed-match-box .match-quote { font-size: 13px; color: #9A8A7E; margin-top: 4px; font-style: italic; }
+
+        .tips-list { list-style: none; padding: 0; text-align: left; }
+        .tips-list li {
+            padding: 10px 12px; background: #F5F0EB; border-radius: 10px; margin-bottom: 8px;
+            font-size: 13px; color: #5A4A3E; display: flex; align-items: center; gap: 10px;
+        }
+        .tips-list li .tip-icon { font-size: 20px; }
+
+        .share-btn {
+            width: 100%; padding: 14px; background: #664B3A; color: #fff;
+            border: none; border-radius: 14px; font-size: 15px; font-weight: 600;
+            cursor: pointer; margin-top: 16px;
+        }
+        .share-btn:active { opacity: 0.85; }
+
+        /* ===== 弹窗 ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 28px 24px 24px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.12);
+            animation: modalPop 0.2s ease;
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.92); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #F0E8E2;
+        }
+        .modal-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #C4B5A9;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .modal-tab.active {
+            color: #664B3A;
+            border-bottom-color: #664B3A;
+        }
+
+        .modal-form { display: none; }
+        .modal-form.show { display: block; }
+
+        .modal-form .form-group { margin-bottom: 14px; }
+        .modal-form .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #9A8A7E;
+            margin-bottom: 6px;
+        }
+        .modal-form .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #F0E8E2;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #664B3A;
+            background: #F9F5F2;
+            outline: none;
+            font-family: inherit;
+            transition: border 0.2s;
+        }
+        .modal-form .form-group input:focus { border-color: #DBC6B4; }
+        .modal-form .form-group input::placeholder { color: #DBC6B4; }
+
+        .modal-form .form-error {
+            color: #C0392B;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: none;
+        }
+        .modal-form .form-error.show { display: block; }
+
+        .modal-form .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: #664B3A;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .modal-form .btn-submit:active { opacity: 0.8; }
+        .modal-form .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: #C4B5A9;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 8px;
+            margin-top: 12px;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .brand-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #DBC6B4;
+            letter-spacing: 1px;
+        }
+
+        .input-group { margin-bottom: 18px; }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #9A8A7E;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 14px;
+            border: 1.5px solid #F0E8E2;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #664B3A;
+            background: #F9F5F2;
+            outline: none;
+            font-family: inherit;
+            transition: border 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus { border-color: #DBC6B4; }
+        .input-subnote {
+            font-size: 12px;
+            color: #C4B5A9;
+            margin-top: 4px;
+        }
+
+        /* ===== 分享图卡遮罩 ===== */
+        .share-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); display: none; align-items: center;
+            justify-content: center; z-index: 999; padding: 20px;
+        }
+
+        /* ===== 光谱滑块题样式 ===== */
+        .slider-container {
+            margin: 30px 10px 20px;
+        }
+        .slider-track {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: #F0E8E2;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+        }
+        .slider-track::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #664B3A;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 2px 8px rgba(102,75,58,0.2);
+        }
+        .slider-track::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #664B3A;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 2px 8px rgba(102,75,58,0.2);
+        }
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #9A8A7E;
+            margin-top: 8px;
+        }
+        .slider-labels .label-start { text-align: left; }
+        .slider-labels .label-end { text-align: right; }
+
+        .next-btn-container {
+            margin-top: 20px;
+        }
+        .btn-next {
+            display: block;
+            width: 100%;
+            background: #664B3A;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .share-overlay.show { display: flex; }
+        .share-overlay .card-wrap {
+            max-width: 340px; width: 100%;
+        }
+        .share-overlay .card-wrap canvas {
+            width: 100%; height: auto; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .share-overlay .close-btn {
+            text-align: center; margin-top: 12px; color: #fff; font-size: 14px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <span class="brand">🐾 YOTOPIA</span>
+        <button class="back-btn" onclick="goBack()">← 返回</button>
+    </nav>
+
+    <div class="container">
+
+        <div id="loadingState" class="loading">加载中...</div>
+
+        <!-- ===== 预览区（未登录用户） ===== -->
+        <div id="previewSection" class="preview-section">
+            <div class="preview-card">
+                <div class="main-icon">🧬</div>
+                <h1>宠物性格测试</h1>
+                <p class="subtitle">15道题，发现你家毛孩子的隐藏性格</p>
+                <p class="desc">从活力、社交、胆量三个维度，科学分析你家宝贝的专属性格类型，并为你推荐最适合的人宠共居方案</p>
+                <div class="preview-results">
+                    <div class="preview-result-card">
+                        <div class="r-icon">🦁</div>
+                        <div class="r-label">佛系山大王</div>
+                        <div class="r-desc">气场两米八但一天睡20小时</div>
+                    </div>
+                    <div class="preview-result-card">
+                        <div class="r-icon">🥺</div>
+                        <div class="r-label">妈宝级挂件</div>
+                        <div class="r-desc">妈妈就是全世界</div>
+                    </div>
+                    <div class="preview-result-card">
+                        <div class="r-icon">🔨</div>
+                        <div class="r-label">拆家办主任</div>
+                        <div class="r-desc">沙发是假想敌</div>
+                    </div>
+                    <div class="preview-result-card">
+                        <div class="r-icon">🎉</div>
+                        <div class="r-label">社交恐怖分子</div>
+                        <div class="r-desc">自来熟天花板</div>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="openAuthModal()">开始测试 →</button>
+            </div>
+        </div>
+
+        <!-- ===== 已登录：用户信息栏 ===== -->
+        <div id="userInfoBar" class="user-info-bar">
+            <div class="avatar" id="userAvatar">
+                <img id="avatarImg" 
+                    src="https://fmyuscjbteiekhiaimgv.supabase.co/storage/v1/object/public/yotopia-assets/logo.jpg"
+                    style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;"
+                    onerror="this.style.display='none'">
+            </div>
+            <div class="info-text">
+                <div class="name" id="userDisplayName">-</div>
+                <div class="tag" id="userSourceTag">-</div>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">退出</button>
+        </div>
+
+        <!-- ===== 测试首页（信息填写+品种选择+年纪+性别） ===== -->
+        <div id="homeSection" class="test-section">
+            <div class="test-card">
+                <h1 style="font-size:20px; font-weight:700; color:#664B3A; text-align:center; margin-bottom:20px;">
+                    开始性格测试
+                </h1>
+
+                <!-- 宠物类型 -->
+                <div class="input-group">
+                    <label>宠物类型 *</label>
+                    <select id="petTypeSelect" onchange="onPetTypeChange()">
+                        <option value="">-- 请选择 --</option>
+                        <option value="cat">- 猫咪</option>
+                        <option value="dog">- 狗狗</option>
+                        <option value="other">- 其他</option>
+                    </select>
+                </div>
+
+                <!-- 粉丝用户：已有宠物档案列表（从数据库加载） -->
+                <div id="existingPetGroup" style="display:none;">
+                    <div class="input-group">
+                        <label>已有宠物 <span style="font-size:12px;color:#C4B5A9;">（第一次使用请新建宠物）</span></label>
+                        <select id="existingPetSelect" onchange="onExistingPetSelect()">
+                            <option value="">-- 选择已有宠物 --</option>
+                            <option value="__NEW__">➕ 新增宠物</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 品种 -->
+                <div class="input-group" id="breedGroup" style="display:none;">
+                    <label>品种 *</label>
+                    <select id="breedSelect">
+                        <option value="">-- 请选择品种 --</option>
+                    </select>
+                </div>
+
+                <!-- 宠物信息 -->
+                <div class="input-group">
+                    <label>宠物名字 *</label>
+                    <input type="text" id="petName" placeholder="请先选择宠物类型">
+                </div>
+
+                <div class="input-group">
+                    <label>生日 *</label>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <input type="date" id="petBirthday" onchange="onBirthdayChange()" 
+                            style="flex:1;padding:14px;border:1.5px solid #F0E8E2;border-radius:12px;font-size:15px;color:#664B3A;background:#F9F5F2;outline:none;font-family:inherit;">
+                        <label style="display:flex;align-items:center;gap:4px;font-size:13px;color:#9A8A7E;white-space:nowrap;cursor:pointer;">
+                            <input type="checkbox" id="yearOnly" onchange="onYearOnlyToggle()">
+                            只填年份
+                        </label>
+                    </div>
+                    <div id="yearOnlyGroup" style="display:none;margin-top:8px;">
+                        <select id="petBirthYear" onchange="onBirthYearChange()"
+                                style="width:100%;padding:14px;border:1.5px solid #F0E8E2;border-radius:12px;font-size:15px;color:#664B3A;background:#F9F5F2;outline:none;font-family:inherit;">
+                            <option value="">-- 选择年份 --</option>
+                        </select>
+                    </div>
+                    <div class="input-subnote">
+                        <span id="ageDisplay" style="color:#C4B5A9;">若不清楚勾选年份即可 ✨ 填写后年龄将影响活力维度的校正</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>性别 *</label>
+                    <select id="petGender"
+                            style="width:100%;padding:14px;border:1.5px solid #F0E8E2;border-radius:12px;font-size:15px;color:#664B3A;background:#F9F5F2;outline:none;font-family:inherit;">
+                        <option value="">未知</option>
+                        <option value="male">男孩</option>
+                        <option value="female">女孩</option>
+                    </select>
+                </div>
+
+                <!-- 当前选择的宠物头像预览 -->
+                <div id="petPreviewArea" style="display:none;text-align:center;margin-bottom:16px;">
+                    <img id="petPreviewImg" src="" 
+                        style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #DBC6B4;">
+                    <div style="font-size:12px;color:#9A8A7E;margin-top:4px;" id="petPreviewLabel">当前选择</div>
+                </div>
+
+                <button class="btn-primary" id="startTestBtn" onclick="startTest()">开始测试（15题）</button>
+            </div>
+        </div>
+
+        <!-- ===== 测试题目区 ===== -->
+        <div id="quizSection" class="test-section">
+            <div class="test-card">
+                <div class="progress-bar-bg">
+                    <div id="progressBar" class="progress-bar-fill"></div>
+                </div>
+                <div class="q-number" id="qNumber">第 1 / 15 题 · 活力维度</div>
+                <div class="q-text" id="qText">加载中...</div>
+                <div id="optionsContainer"></div>
+            </div>
+        </div>
+
+        <!-- ===== 加载中（判分） ===== -->
+        <div id="scoringSection" class="test-section">
+            <div class="test-card" style="text-align:center;padding:40px 24px;">
+                <div style="font-size:48px;margin-bottom:12px;">🔮</div>
+                <div style="font-size:16px;font-weight:600;color:#664B3A;">正在分析性格成分...</div>
+                <div style="font-size:13px;color:#C4B5A9;margin-top:4px;">分析完毕后即可查看结果</div>
+                <div style="width:48px;height:48px;border:4px solid #F0E8E2;border-top-color:#664B3A;border-radius:50%;animation:spin 0.8s linear infinite;margin:20px auto;"></div>
+            </div>
+        </div>
+
+        <!-- ===== 结果区 ===== -->
+        <div id="resultSection" class="result-section">
+            <div class="result-card">
+                <div id="resultContent"></div>
+                
+                <div class="score-bars" id="scoreBars"></div>
+
+                <div class="result-desc" id="resultDesc" style="display:none;"></div>
+                <div class="result-quote" id="resultQuote" style="display:none;"></div>
+
+                <div id="breedMatchArea" style="display:none;">
+                    <h3 style="font-size:15px;font-weight:600;color:#664B3A;margin:16px 0 8px;text-align:left;">🔍 品种对比分析</h3>
+                    <div class="breed-match-box" id="breedMatchBox"></div>
+                </div>
+
+                <div>
+                    <h3 style="font-size:15px;font-weight:600;color:#664B3A;margin:16px 0 8px;text-align:left;">🏠 人宠共居小贴士</h3>
+                    <ul class="tips-list" id="tipsList"></ul>
+                </div>
+
+                <button class="share-btn" onclick="showShareCard()">📸 生成分享图卡</button>
+                <button class="btn-secondary" onclick="goHome()">重新测试</button>
+                <button class="btn-primary" style="margin-top:12px;" onclick="goBack()">返回 YOTOPIA</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="brand-footer">让陪伴，自然融入</div>
+
+    <!-- ===== 登录/注册弹窗 ===== -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-tabs">
+                <div class="modal-tab active" data-tab="login" onclick="switchAuthTab('login')">登录</div>
+                <div class="modal-tab" data-tab="register" onclick="switchAuthTab('register')">注册</div>
+            </div>
+
+            <div id="loginForm" class="modal-form show">
+                <div class="form-group"><label>用户名</label><input type="text" id="loginUsername" placeholder="输入你的用户名" autocomplete="username"></div>
+                <div class="form-group"><label>密码</label><input type="password" id="loginPassword" placeholder="输入密码" autocomplete="current-password"></div>
+                <div id="loginError" class="form-error"></div>
+                <button class="btn-submit" id="loginBtn" onclick="handleLogin()">登录</button>
+                <button class="modal-close-btn" onclick="closeAuthModal()">取消</button>
+            </div>
+
+            <div id="registerForm" class="modal-form">
+                <div class="form-group"><label>用户名</label><input type="text" id="regUsername" placeholder="设置你的用户名（唯一）" autocomplete="username"></div>
+                <div class="form-group"><label>昵称</label><input type="text" id="regNickname" placeholder="你的显示名称"></div>
+                <div class="form-group"><label>密码</label><input type="password" id="regPassword" placeholder="设置密码（至少4位）" autocomplete="new-password"></div>
+                <div class="form-group"><label>确认密码</label><input type="password" id="regPasswordConfirm" placeholder="再次输入密码"></div>
+                <div id="registerError" class="form-error"></div>
+                <button class="btn-submit" id="registerBtn" onclick="handleRegister()">注册并开始测试</button>
+                <button class="modal-close-btn" onclick="closeAuthModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 新增宠物弹窗 ===== -->
+    <div id="addPetModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 style="font-size:18px; font-weight:700; color:#664B3A; text-align:center; margin-bottom:20px;">
+                新增宠物档案
+            </h2>
+            <div id="addPetForm" class="modal-form show">
+                <div class="form-group">
+                    <label>宠物名字 *</label>
+                    <input type="text" id="modalPetName" placeholder="你家毛孩子的名字">
+                </div>
+                <div class="form-group">
+                    <label>生日（选填，年份即可）</label>
+                    <input type="date" id="modalPetBirthday">
+                </div>
+                <div class="form-group">
+                    <label>性别（选填）</label>
+                    <select id="modalPetGender" style="width:100%;padding:12px 14px;border:1.5px solid #F0E8E2;border-radius:12px;font-size:15px;color:#664B3A;background:#F9F5F2;outline:none;">
+                        <option value="">未知</option>
+                        <option value="male">男孩</option>
+                        <option value="female">女孩</option>
+                    </select>
+                </div>
+                <div id="addPetError" class="form-error"></div>
+                <button class="btn-submit" id="savePetBtn" onclick="handleSaveNewPet()">保存档案</button>
+                <button class="modal-close-btn" onclick="closeAddPetModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 分享图卡遮罩 ===== -->
+    <div id="shareOverlay" class="share-overlay" onclick="closeShareCard(event)">
+        <div class="card-wrap">
+            <canvas id="shareCanvas" width="600" height="800"></canvas>
+            <div class="close-btn" onclick="closeShareCard()">长按或截图保存 · 点击关闭</div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://broad-pond-47e3.andy99jjc.workers.dev';
+        let currentUser = null;
+        let isFan = false;  // 粉丝标记
+
+        // ===== 15道题完整题库 =====
+        const QUESTIONS = [
+            // ===== ⚡ 活力维度 (Energy) - 5题 =====
+            { id: 1, dimension: 'energy', type: 'slider', text: '周末早晨，如果没人打扰，你家毛孩子更像是...',
+            endA: '😴 能睡到昏天黑地的昏睡派', endB: '☀️ 天一亮就开始蹦迪的闹钟派' },
+            { id: 2, dimension: 'energy', type: 'choice_none', text: '当一个全新的玩具出现在它面前，它的典型反应是？',
+            A: '👀 谨慎的观察员：需要很久才敢碰一下', A_val: -1,
+            B: '🧐 淡定的质检员：闻一闻，玩两下就走开', B_val: 0,
+            C: '🎉 狂热的体验官：立刻开始疯狂玩耍', C_val: 1 },
+            { id: 3, dimension: 'energy', type: 'classic', text: '它在家“跑酷”（突然爆发式狂奔）的频率？',
+            A: '📉 几乎从不，是个安静的美男子/女子', A_val: -1,
+            B: '📈 偶尔，通常在饭后或半夜', B_val: 0,
+            C: '🚀 每天N次，邻居以为我家养了头牛', C_val: 1 },
+            { id: 4, dimension: 'energy', type: 'slider', text: '它的精力模式更接近于...',
+            endA: '🔋 玩耍五分钟，充电两小时', endB: '⚡️ 充电五分钟，疯玩两小时' },
+            { id: 5, dimension: 'energy', type: 'choice_none', text: '在家里，它大多数时候的“默认状态”是？',
+            A: '🛋️ 液体状态，能瘫着绝不趴着', A_val: -1,
+            B: '🤔 思考者状态，优雅地趴着或坐着，观察四周', B_val: 0,
+            C: '🏃‍♀️ 预备跑状态，身体紧凑，随时准备冲刺', C_val: 1 },
+
+            // ===== 💞 社交维度 (Social) - 5题 =====
+            { id: 6, dimension: 'social', type: 'slider', text: '如果把它带到一个全是陌生人（和宠物）的派对上，它会是...',
+            endA: '🫣 在角落默默观察的边缘OB', endB: '🎉 满场飞奔问候大家的社交恐怖分子' },
+            { id: 7, dimension: 'social', type: 'choice_none', text: '当你坐下放松时，它最常见的“求贴贴”方式是？',
+            A: '😏 君子之交，在你附近但保持一臂距离', A_val: -1,
+            B: '🧐 随缘宠幸，偶尔过来蹭一下，点到为止', B_val: 0,
+            C: '껌 人体挂件，必须紧紧贴着、趴在你身上', C_val: 1 },
+            { id: 8, dimension: 'social', type: 'classic', text: '你准备出门时，它的反应通常是？',
+            A: '👋 “慢走不送”，看你一眼继续自己的事', A_val: -1,
+            B: '🚶‍♂️ 会跟到门口，目送你离开', B_val: 0,
+            C: '😭 上演生离死别大戏，扒门、嚎叫', C_val: 1 },
+            { id: 9, dimension: 'social', type: 'slider', text: '你认为在它心里，你更像一个...',
+            endA: '👤 合租的室友，兼职铲屎官', endB: '❤️ 没你就活不下去的全世界' },
+            { id: 10, dimension: 'social', type: 'choice_none', text: '当你想抱它或者抚摸它时，它通常会？',
+            A: '🚫 “婉拒了哈”，象征性挣扎一下就溜走', A_val: -1,
+            B: '🤷‍♂️ “看朕心情”，有时享受有时走开', B_val: 0,
+            C: '💖 “来吧妈妈”，主动翻肚皮发出呼噜声', C_val: 1 },
+
+            // ===== 🦁 胆量维度 (Boldness) - 5题 =====
+            { id: 11, dimension: 'bold', type: 'slider', text: '如果一个神秘的快递箱出现在客厅，它的第一反应是...',
+            endA: '🤔 “这玩意儿可能很危险”，保持距离暗中观察', endB: '😼 “让我康康里面是啥好东西”，立刻上前探索' },
+            { id: 12, dimension: 'bold', type: 'classic', text: '去宠物医院时，它的表现更接近？',
+            A: '🥶 “吓死宝宝了”，全程发抖，缩成一团', A_val: -1,
+            B: '😑 “我忍了”，有点紧张但还算配合', B_val: 0,
+            C: '😡 “你们要干嘛”，对医生龇牙咧嘴、骂骂咧咧', C_val: 1 },
+            { id: 13, dimension: 'bold', type: 'choice_none', text: '当你假装很伤心地哭泣时，它会？',
+            A: '😘 贴心小棉袄，跑过来舔你的眼泪或蹭你', A_val: -1,
+            B: '🤔 吃瓜群众，歪着头一脸困惑地看着你', B_val: 0,
+            C: '🙄 “这人又犯病了”，冷漠地走开', C_val: 1 },
+            { id: 14, dimension: 'bold', type: 'slider', text: '听到窗外突然传来一声巨响，它的反应更像是...',
+            endA: '💨 “敌袭！”，瞬间消失在床底/沙发下', endB: '👀 “啥玩意儿？”，冲到窗边一探究竟' },
+            { id: 15, dimension: 'bold', type: 'choice_none', text: '它犯错被你批评后，通常是？',
+            A: '🥺 “我错了呜呜呜”，飞机耳、缩成一团、眼神躲闪', A_val: -1,
+            B: '😐 “你说得都对”，假装听懂，下次还敢', B_val: 0,
+            C: '😠 “你还敢凶我？”，当场顶嘴甚至报复性搞破坏', C_val: 1 }
+        ];
+
+        // ===== 8种性格类型数据 =====
+        const PERSONALITY_TYPES = {
+            'T01': { emoji: '😼', title: '窝里横の哲学家', subtitle: '能躺着绝不坐着，外人来了钻沙发，但敢凶主人',
+                     desc: '你家这位是典型的"内狠外怂"选手。在家里它是绝对的王者——想摸就摸，不想摸就给你一爪子。但只要门铃一响，它比你跑得还快，钻到沙发底下能用眼神杀死任何入侵者。它的生活哲学很简单：能不动的坚决不动，非动不可的慢慢动。',
+                     quote: '"我凶起来自己都怕……等确认安全后再怕。"',
+                     tips: [{ icon: '🏠', tip: '给它一个带顶的猫窝/狗窝——安全感的来源' }, { icon: '🙈', tip: '不要强迫它社交，尊重它的社恐' }, { icon: '☀️', tip: '一个飘窗垫+晒太阳=它的终极幸福' }] },
+            'T02': { emoji: '🦁', title: '佛系山大王', subtitle: '一般不惹事，惹了别想跑。气场两米八但一天睡20小时',
+                     desc: '你家这位属于"人狠话不多"类型。平时你看它不是在睡觉就是在去睡觉的路上，你以为它是个软柿子？错了。一旦有人侵犯它的领地，它瞬间变身的反应能把你吓一跳。它有一种"懒得理你但你别惹我"的气质。',
+                     quote: '"我一般不打架，除非……算了，打架太累了，下次吧。"',
+                     tips: [{ icon: '🏔️', tip: '给它一个属于自己的高位——猫爬架或高床' }, { icon: '💤', tip: '不要打扰它睡觉，这是它积蓄王霸之气的时刻' }, { icon: '🛋️', tip: '选择深色耐脏的窝——反正它也不怎么挪窝' }] },
+            'T03': { emoji: '🥺', title: '妈宝级挂件', subtitle: '妈妈就是全世界。妈妈不在=世界末日',
+                     desc: '恭喜你，你养了一个"绑定版"宠物。它对你的依赖程度堪比婴儿对奶瓶——你在哪它在哪，你上厕所它要陪，你洗澡它要在门口守，你睡觉它要贴着你睡。如果你出门太久，回家迎接你的将是一顿骂骂咧咧和疯狂的蹭蹭攻击。',
+                     quote: '"妈妈去上班的8个小时，是我人生中最黑暗的8个小时。"',
+                     tips: [{ icon: '🎒', tip: '可穿戴宠物包——24小时挂件升级版' }, { icon: '👕', tip: '留一件有你的味道的衣服给它，缓解分离焦虑' }, { icon: '🚪', tip: '出门前别夸张告别——淡定离开它反而更安心' }] },
+            'T04': { emoji: '👑', title: '昏君体验卡', subtitle: '躺着让你伺候，还一脸"这是你的福气"',
+                     desc: '你家这位完美诠释了什么叫"主子"。它躺着的姿势永远比你坐着还舒服，想吃的时候叫两声，不想吃的时候闻闻就走，留你在原地怀疑人生。它看你的时候眼神里总带着三分薄凉三分讥诮四分漫不经心。',
+                     quote: '"你爱我，我知道。我爱不爱你，看我心情。"',
+                     tips: [{ icon: '🤖', tip: '自动喂食器——省得它半夜叫你起床服务' }, { icon: '✋', tip: '不要用手当玩具——保持你作为铲屎官最后的尊严' }, { icon: '👑', tip: '选一个配得上它身份的豪华窝' }] },
+            'T05': { emoji: '👻', title: '疯批社恐', subtitle: '半夜跑酷天花板，白天见人就缩',
+                     desc: '你家这位有一种"矛盾美"。白天它是社恐本恐——陌生人来了躲得比谁都快。但一到深夜，它就像换了只宠物——满屋狂奔、跳跃、漂移，动静之大让楼下邻居以为你在家里养了一匹马。',
+                     quote: '"谁在外面？让我看看……算了不看了。现在是凌晨3点，该跑酷了。"',
+                     tips: [{ icon: '🎾', tip: '白天多消耗它的精力——睡前一个高强度游戏' }, { icon: '🔇', tip: '隔音垫+地毯——保楼下邻居的命' }, { icon: '🌲', tip: '给它一个高处避难所——白天被吓到时有地方躲' }] },
+            'T06': { emoji: '🔨', title: '拆家办主任', subtitle: '沙发是假想敌，拆完还一脸"怎么了？"',
+                     desc: '你家这位是宠物界的"室内装修行业领军人物"。沙发、窗帘、数据线、卫生纸——所有东西在它眼里都是"需要被征服的对象"。更可气的是它每次破坏完都是一脸无辜。',
+                     quote: '"装修是门艺术，而我是艺术家。虽然我的作品只有毁灭。"',
+                     tips: [{ icon: '🦴', tip: '耐咬磨牙玩具——保家具一条生路' }, { icon: '🏃', tip: '每天至少40分钟高强度运动，消耗它的拆家KPI' }, { icon: '🔒', tip: '把贵重物品藏起来——这不是妥协，是战术' }] },
+            'T07': { emoji: '🤪', title: '又菜又爱玩', subtitle: '跟着你屁股跑，门外一点动静就吓飞，3秒后继续疯',
+                     desc: '你家这位是"胆子不大瘾挺大"的典型。它超级粘人，你走到哪它跟到哪，你以为它是保镖？不，它是"被保护的那个"。一阵风、一个塑料袋、一片落叶都能把它吓得原地起飞。但有趣的是，它被吓到后3秒就忘了。',
+                     quote: '"刚才那个塑料袋好吓人！……算了不想了，妈妈陪我玩！"',
+                     tips: [{ icon: '🌍', tip: '日常社交训练——从阳台看世界开始' }, { icon: '🍗', tip: '用它最爱的零食建立正向联想' }, { icon: '😌', tip: '不要过度安慰它的害怕——淡定=它觉得没事' }] },
+            'T08': { emoji: '🎉', title: '社交恐怖分子', subtitle: '自来熟天花板，来者是客，是客就蹭。整条街都是它地盘',
+                     desc: '你家这位是宠物界"社牛天花板"。不管是人还是狗/猫，它都能在三秒内和对方混熟。来家里修空调的师傅、楼下遛弯的大爷——全都逃不过它的社交攻势。它仿佛觉得自己是这片区域的主人。',
+                     quote: '"你好！你叫什么名字？你饿不饿？我们一起玩吧！别走啊！！"',
+                     tips: [{ icon: '📍', tip: '防走丢牵引绳/定位器——社牛容易跟人跑了' }, { icon: '💉', tip: '定期驱虫+疫苗——社交达人需要健康体魄' }, { icon: '📯', tip: '给它一个"回家暗号"——方便你在它社交过头时叫回来' }] }
+        };
+
+        // ===== 品种数据（猫/狗） =====
+        const BREEDS = {
+            cat: [
+                { id: 1, name: '英国短毛猫', emoji: '-', se: 'low', ss: 'lone', sb: 'timid', quote: '能躺着绝不动，动也是换个姿势继续躺' },
+                { id: 2, name: '美国短毛猫', emoji: '-', se: 'low', ss: 'lone', sb: 'bold', quote: '外表乖巧，内心住着一个想要拆家的灵魂' },
+                { id: 3, name: '布偶猫', emoji: '-', se: 'low', ss: 'clingy', sb: 'timid', quote: '我就是个会呼吸的毛绒玩具' },
+                { id: 4, name: '暹罗猫', emoji: '-', se: 'high', ss: 'clingy', sb: 'bold', quote: '我不是猫，我是你家里养的一条狗' },
+                { id: 5, name: '波斯猫', emoji: '-', se: 'low', ss: 'lone', sb: 'timid', quote: '优雅、高贵、懒得理你' },
+                { id: 6, name: '异国短毛猫（加菲）', emoji: '-', se: 'low', ss: 'clingy', sb: 'timid', quote: '我懒，我馋，我丑萌，但我值得被爱' },
+                { id: 7, name: '缅因猫', emoji: '-', se: 'low', ss: 'lone', sb: 'bold', quote: '体型像狗，性格像人' },
+                { id: 8, name: '苏格兰折耳猫', emoji: '-', se: 'low', ss: 'clingy', sb: 'timid', quote: '耳朵是折叠的，性格是省心的' },
+                { id: 9, name: '金吉拉', emoji: '-', se: 'low', ss: 'lone', sb: 'timid', quote: '仙女的猫，不理凡人是本职工作' },
+                { id: 10, name: '阿比西尼亚猫', emoji: '-', se: 'high', ss: 'clingy', sb: 'bold', quote: '永动机本机' },
+                { id: 11, name: '斯芬克斯猫（无毛）', emoji: '-', se: 'high', ss: 'clingy', sb: 'bold', quote: '我不是丑，我是前卫' },
+                { id: 12, name: '德文卷毛猫', emoji: '-', se: 'high', ss: 'clingy', sb: 'bold', quote: '长相像小精灵，精力像大魔王' },
+                { id: 13, name: '俄罗斯蓝猫', emoji: '-', se: 'low', ss: 'lone', sb: 'timid', quote: '高冷是面具，熟了以后是个话痨' },
+                { id: 14, name: '孟加拉豹猫', emoji: '-', se: 'high', ss: 'lone', sb: 'bold', quote: '别看我长得野，我是真的野' },
+                { id: 15, name: '中国狸花猫', emoji: '-', se: 'high', ss: 'lone', sb: 'bold', quote: '中华血脉觉醒' },
+                { id: 16, name: '橘猫（中华田园）', emoji: '-', se: 'low', ss: 'clingy', sb: 'bold', quote: '十只橘猫九个胖' },
+                { id: 17, name: '三花/玳瑁', emoji: '-', se: 'high', ss: 'lone', sb: 'bold', quote: '如果你觉得我脾气不好，那你是对的' },
+                { id: 18, name: '奶牛猫', emoji: '-', se: 'high', ss: 'lone', sb: 'bold', quote: '长得像牛，疯起来像' },
+                { id: 19, name: '山东狮子猫', emoji: '-', se: 'low', ss: 'lone', sb: 'timid', quote: '发型到位，气质高贵' },
+                { id: 20, name: '伯曼猫', emoji: '-', se: 'low', ss: 'clingy', sb: 'timid', quote: '布偶的低配版，粘人的高配版' },
+                { id: 21, name: '串串/不确定', emoji: '-', se: null, ss: null, sb: null, quote: '神秘基因组合体，开盲盒' }
+            ],
+            dog: [
+                { id: 101, name: '金毛寻回犬', emoji: '🦮', se: 'high', ss: 'clingy', sb: 'timid', quote: '用微笑治愈你，用口水淹死你' },
+                { id: 102, name: '拉布拉多', emoji: '🐕', se: 'high', ss: 'clingy', sb: 'bold', quote: '吃饭第一名，拆家第二，爱你第三' },
+                { id: 103, name: '柯基', emoji: '🦊', se: 'high', ss: 'clingy', sb: 'bold', quote: '腿短志气高，骂人第一名' },
+                { id: 104, name: '柴犬', emoji: '🐶', se: 'high', ss: 'lone', sb: 'bold', quote: '表情包专业户，倔强本倔' },
+                { id: 105, name: '哈士奇', emoji: '🐺', se: 'high', ss: 'clingy', sb: 'bold', quote: '智商忽高忽低，拆家恒久远' },
+                { id: 106, name: '萨摩耶', emoji: '☁️', se: 'high', ss: 'clingy', sb: 'timid', quote: '微笑天使，拆家魔鬼' },
+                { id: 107, name: '贵宾（泰迪）', emoji: '🧸', se: 'high', ss: 'clingy', sb: 'bold', quote: '聪明到能考大学，但选择用它来谈恋爱' },
+                { id: 108, name: '法国斗牛犬', emoji: '🐷', se: 'low', ss: 'clingy', sb: 'timid', quote: '呼吸声比狗吠大，放屁比你说话多' },
+                { id: 109, name: '边境牧羊犬', emoji: '🧠', se: 'high', ss: 'lone', sb: 'bold', quote: '它觉得你是它要放的羊' },
+                { id: 110, name: '德国牧羊犬', emoji: '🛡️', se: 'high', ss: 'lone', sb: 'bold', quote: '正经起来像特工，撒娇起来像婴儿' },
+                { id: 111, name: '吉娃娃', emoji: '🌶️', se: 'high', ss: 'clingy', sb: 'bold', quote: '全世界的体型PUA受害者代表' },
+                { id: 112, name: '博美', emoji: '☕', se: 'high', ss: 'clingy', sb: 'bold', quote: '小身体大能量，骂街功力满级' },
+                { id: 113, name: '中华田园犬', emoji: '🏡', se: 'low', ss: 'lone', sb: 'bold', quote: '天下狗狗的祖宗，不挑食不挑活' },
+                { id: 114, name: '秋田犬', emoji: '⛩️', se: 'low', ss: 'lone', sb: 'bold', quote: '忠犬八公代名词' },
+                { id: 115, name: '阿拉斯加', emoji: '❄️', se: 'low', ss: 'lone', sb: 'bold', quote: '体型是熊，性格是猫，吃的是钱' },
+                { id: 116, name: '比熊', emoji: '☁️', se: 'high', ss: 'clingy', sb: 'timid', quote: '棉花糖成精' },
+                { id: 117, name: '巴哥犬', emoji: '😢', se: 'low', ss: 'clingy', sb: 'timid', quote: '脸上写满悲伤，心里全是干饭' },
+                { id: 118, name: '马尔济斯', emoji: '🎀', se: 'low', ss: 'clingy', sb: 'timid', quote: '行走的拖把，居家的小公主' },
+                { id: 119, name: '杜宾', emoji: '⚡', se: 'high', ss: 'lone', sb: 'bold', quote: '保镖本镖' },
+                { id: 120, name: '雪纳瑞', emoji: '🧔', se: 'high', ss: 'clingy', sb: 'bold', quote: '八字胡老干部，爱管闲事第一名' },
+                { id: 121, name: '串串/不确定', emoji: '🌟', se: null, ss: null, sb: null, quote: '混血王子/公主，集百家之长' }
+            ]
+        };
+
+        // ===== 状态变量 =====
+        let petType = '';
+        let breedId = null;
+        let petName = '';
+        let petBirthday = '';   // YYYY-MM-DD 或 YYYY
+        let petGender = '';
+        // let petPhotoUrl = '';   // 用于头像预览
+        let userPets = [];      // 缓存粉丝用户已有宠物
+        let currentQ = 0;
+        let answers = [];
+        let resultData = null;
+
+        // ===== 新增宠物弹窗控制 =====
+        function openAddPetModal() {
+            // 检查是否已选择宠物类型
+            const petType = document.getElementById('petTypeSelect').value;
+            if (!petType || petType === 'other') {
+                alert('请先选择一个宠物类型（猫咪或狗狗）再新增宠物。');
+                // 将下拉框重置回 "-- 选择已有宠物 --"
+                document.getElementById('existingPetSelect').value = '';
+                return;
+            }
+            
+            // 清空弹窗内的旧数据
+            document.getElementById('modalPetName').value = '';
+            document.getElementById('modalPetBirthday').value = '';
+            document.getElementById('modalPetGender').value = '';
+            document.getElementById('addPetError').classList.remove('show');
+            
+            // 显示弹窗
+            document.getElementById('addPetModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeAddPetModal() {
+            document.getElementById('addPetModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        async function handleSaveNewPet() {
+            const petType = document.getElementById('petTypeSelect').value;
+            const name = document.getElementById('modalPetName').value.trim();
+            const birthday = document.getElementById('modalPetBirthday').value;
+            const gender = document.getElementById('modalPetGender').value;
+            const errorEl = document.getElementById('addPetError');
+            const btn = document.getElementById('savePetBtn');
+            if (!name) {
+                errorEl.textContent = '宠物名字不能为空';
+                errorEl.classList.add('show');
+                return;
+            }
+            errorEl.classList.remove('show');
+            btn.disabled = true;
+            btn.textContent = '保存中...';
+            try {
+                const res = await fetch(WORKER_URL + '/api/add-pet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUser.id },
+                    body: JSON.stringify({
+                        name: name,
+                        birthday: birthday || '',
+                        gender: gender || '',
+                        pet_type: petType
+                    })
+                });
+                const data = await res.json();
+                if (data.success && data.pet) {
+                    // 1. 更新本地宠物列表
+                    userPets.push(data.pet);
+                    
+                    // 2. 重新填充下拉框
+                    populateExistingPets(petType);
+                    
+                    // 3. 自动选中刚刚创建的宠物
+                    document.getElementById('existingPetSelect').value = data.pet.id;
+                    
+                    // 4. 触发 onchange 事件，自动填充主表单
+                    onExistingPetSelect();
+                    
+                    // 5. 关闭弹窗
+                    closeAddPetModal();
+                } else {
+                    errorEl.textContent = data.message || '保存失败，请重试';
+                    errorEl.classList.add('show');
+                }
+            } catch (e) {
+                errorEl.textContent = '网络错误，请稍后重试';
+                errorEl.classList.add('show');
+            }
+            btn.disabled = false;
+            btn.textContent = '保存档案';
+        }
+
+        const DEFAULT_AVATAR_URL = 'https://fmyuscjbteiekhiaimgv.supabase.co/storage/v1/object/public/yotopia-assets/logo.jpg';
+        function updateTopAvatar(photoUrl) {
+            const avatarImg = document.getElementById('avatarImg');
+            if (photoUrl) {
+                avatarImg.src = photoUrl;
+            } else {
+                avatarImg.src = DEFAULT_AVATAR_URL;
+            }
+        }
+        
+        // ===== 页面加载 =====
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var userId = params.get('user_id');
+
+            if (userId) {
+                isFan = true;  // 有 user_id 参数 = 粉丝入口
+                tryAutoLogin(userId);
+            } else {
+                var stored = localStorage.getItem('yotopia_test_user');
+                if (stored) {
+                    try {
+                        currentUser = JSON.parse(stored);
+                        showLoggedIn();
+                    } catch (e) {
+                        localStorage.removeItem('yotopia_test_user');
+                        showPreview();
+                    }
+                } else {
+                    showPreview();
+                }
+            }
+        })();
+
+        async function tryAutoLogin(userId) {
+            await showLoading();
+            try {
+                var res = await fetch(WORKER_URL + '/api/user/get?user_id=' + encodeURIComponent(userId));
+                var data = await res.json();
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    currentUser.source = 'fan';
+                    localStorage.setItem('yotopia_test_user', JSON.stringify(currentUser));
+                    await showLoggedIn();
+                    return;
+                }
+            } catch (e) {}
+
+            var mainUserData = localStorage.getItem('yotopia_user');
+            if (mainUserData) {
+                try {
+                    var mainUser = JSON.parse(mainUserData);
+                    if (mainUser && mainUser.id === userId) {
+                        currentUser = { id: userId, username: '', nickname: mainUser.display_name || mainUser.wechat_id || '用户', source: 'fan' };
+                        localStorage.setItem('yotopia_test_user', JSON.stringify(currentUser));
+                        await showLoggedIn();
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            var stored = localStorage.getItem('yotopia_test_user');
+            if (stored) {
+                try {
+                    var cachedUser = JSON.parse(stored);
+                    if (cachedUser && cachedUser.id === userId) {
+                        currentUser = cachedUser;
+                        await showLoggedIn();
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            currentUser = { id: userId, username: '', nickname: '用户', source: 'fan' };
+            localStorage.setItem('yotopia_test_user', JSON.stringify(currentUser));
+            await showLoggedIn();
+        }
+
+        // ===== 页面状态切换 =====
+        function showLoading() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('previewSection').classList.remove('show');
+            document.getElementById('userInfoBar').classList.remove('show');
+            document.getElementById('homeSection').classList.remove('show');
+            document.getElementById('quizSection').classList.remove('show');
+            document.getElementById('scoringSection').classList.remove('show');
+            document.getElementById('resultSection').classList.remove('show');
+        }
+
+        function showPreview() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('previewSection').classList.add('show');
+            document.getElementById('userInfoBar').classList.remove('show');
+            document.getElementById('homeSection').classList.remove('show');
+            document.getElementById('quizSection').classList.remove('show');
+            document.getElementById('scoringSection').classList.remove('show');
+            document.getElementById('resultSection').classList.remove('show');
+        }
+
+        async function showLoggedIn() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('previewSection').classList.remove('show');
+
+            if (currentUser) {
+                var bar = document.getElementById('userInfoBar');
+                bar.classList.add('show');
+                var displayName = currentUser.nickname || currentUser.display_name || currentUser.wechat_id || currentUser.username || '用户';
+                document.getElementById('userDisplayName').textContent = displayName;
+                var tag = isFan || currentUser.source === 'fan' ? '🐾 粉丝用户' : '🌐 普通用户';
+                document.getElementById('userSourceTag').textContent = tag;
+            }
+            // ⬇️ 改这里：await 宠物加载完毕再显示主页
+            if (isFan || (currentUser && currentUser.source === 'fan')) {
+                await loadUserPets();
+            }
+            document.getElementById('homeSection').classList.add('show');
+            document.getElementById('quizSection').classList.remove('show');
+            document.getElementById('scoringSection').classList.remove('show');
+            document.getElementById('resultSection').classList.remove('show');
+        }
+        
+        async function loadUserPets() {
+            if (!currentUser || !currentUser.id) return;
+            try {
+                var res = await fetch(WORKER_URL + '/api/my-pets', {
+                    headers: { 'X-User-Id': currentUser.id }
+                });
+                var data = await res.json();
+                if (data.success && data.pets) {
+                    userPets = data.pets;
+                }
+            } catch (e) {
+                userPets = [];
+            }
+        }
+
+        // ===== 宠物类型 → 品种列表 =====
+        function onPetTypeChange() {
+            var type = document.getElementById('petTypeSelect').value;
+            var breedGroup = document.getElementById('breedGroup');
+            var breedSelect = document.getElementById('breedSelect');
+            var existingGroup = document.getElementById('existingPetGroup');
+            
+            updateTopAvatar(null);  
+            // 重置表单
+            breedGroup.style.display = 'none';
+            existingGroup.style.display = 'none';
+            document.getElementById('petPreviewArea').style.display = 'none';
+            document.getElementById('petName').value = '';
+            document.getElementById('petBirthday').value = '';
+            document.getElementById('petGender').value = '';
+            document.getElementById('yearOnly').checked = false;
+            document.getElementById('yearOnlyGroup').style.display = 'none';
+            document.getElementById('ageDisplay').textContent = '✨填写后年龄将影响活力维度的校正';
+
+            if (!type || type === 'other') {
+                breedGroup.style.display = 'none';
+                return;
+            }
+
+            // 品种列表
+            breedGroup.style.display = 'block';
+            breedSelect.innerHTML = '<option value="">-- 请选择品种 --</option>';
+            (BREEDS[type] || []).forEach(function(b) {
+                var opt = document.createElement('option');
+                opt.value = b.id;
+                opt.textContent = (b.emoji || '🐾') + ' ' + b.name;
+                breedSelect.appendChild(opt);
+            });
+
+            // ⬇️ 新增：粉丝用户显示已有宠物列表
+            if (currentUser) { // 只要是登录用户就显示
+                existingGroup.style.display = 'block';
+                populateExistingPets(type);
+            }
+        }
+
+        function populateExistingPets(type) {
+            var select = document.getElementById('existingPetSelect');
+            select.innerHTML = '<option value="">-- 选择已有宠物 --</option>' +
+                '<option value="__NEW__">➕ 新增宠物</option>';
+
+            userPets.forEach(function(p) {
+                // 如果有 pet_type 字段，按类型过滤
+                if (p.pet_type && p.pet_type !== type) return;
+                var opt = document.createElement('option');
+                opt.value = p.id;
+                var label = p.name || '未命名';
+                if (p.birthday) label += ' (' + p.birthday.slice(0, 4) + ')';
+                opt.textContent = label;
+                select.appendChild(opt);
+            });
+        }
+
+        function onExistingPetSelect() {
+            const val = document.getElementById('existingPetSelect').value;
+
+            if (val === '__NEW__') {
+                openAddPetModal();
+                // 用户可能会取消，所以先不清主表单，只把下拉框重置
+                document.getElementById('existingPetSelect').value = ''; 
+                return;
+            }
+            
+            // 清理下方预览区和顶部头像
+            document.getElementById('petPreviewArea').style.display = 'none';
+            updateTopAvatar(null);
+
+            // 如果选的是"-- 选择已有宠物 --"，则清空主表单后返回
+            if (!val) {
+                document.getElementById('petName').value = '';
+                document.getElementById('petBirthday').value = '';
+                document.getElementById('petGender').value = '';
+                return;
+            }
+
+            // 找到选中的宠物 (用 == 是为了防止 string 和 number 类型问题)
+            const pet = userPets.find(function(p) { return p.id == val; });
+            if (!pet) return;
+
+            // 填充主表单信息
+            document.getElementById('petName').value = pet.name || '';
+            if (pet.birthday) {
+                if (pet.birthday.length === 4) {
+                    document.getElementById('yearOnly').checked = true;
+                    document.getElementById('petBirthday').value = '';
+                    document.getElementById('yearOnlyGroup').style.display = 'block';
+                    document.getElementById('petBirthYear').value = pet.birthday;
+                    calcAgeFromYear(pet.birthday);
+                } else {
+                    document.getElementById('petBirthday').value = pet.birthday;
+                    document.getElementById('yearOnly').checked = false;
+                    document.getElementById('yearOnlyGroup').style.display = 'none';
+                    calcAge(pet.birthday);
+                }
+            } else {
+                // 如果没有生日信息，清空生日相关输入
+                document.getElementById('petBirthday').value = '';
+                document.getElementById('yearOnly').checked = false;
+                document.getElementById('yearOnlyGroup').style.display = 'none';
+            }
+            document.getElementById('petGender').value = pet.gender || '';
+
+            // 更新顶部头像
+            updateTopAvatar(pet.photo_url);
+        }
+        
+        // 初始化年份下拉（2000年~今年）
+        (function initYearSelect() {
+            var select = document.getElementById('petBirthYear');
+            var thisYear = new Date().getFullYear();
+            for (var y = thisYear; y >= 2000; y--) {
+                var opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y + '年';
+                select.appendChild(opt);
+            }
+        })();
+
+        function onYearOnlyToggle() {
+            var checked = document.getElementById('yearOnly').checked;
+            document.getElementById('yearOnlyGroup').style.display = checked ? 'block' : 'none';
+            if (checked) {
+                document.getElementById('petBirthday').value = '';
+            } else {
+                document.getElementById('petBirthYear').value = '';
+            }
+            document.getElementById('ageDisplay').textContent = checked ? '' : '✨填写后年龄将影响活力维度的校正';
+        }
+
+        function onBirthYearChange() {
+            var year = document.getElementById('petBirthYear').value;
+            if (year) calcAgeFromYear(year);
+        }
+
+        function onBirthdayChange() {
+            var date = document.getElementById('petBirthday').value;
+            if (date) calcAge(date);
+        }
+
+        function calcAge(dateStr) {
+            if (!dateStr) {
+                document.getElementById('ageDisplay').textContent = '✨填写后年龄将影响活力维度的校正';
+                return;
+            }
+            var parts = dateStr.split('-');
+            var birth = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            var today = new Date();
+            var years = today.getFullYear() - birth.getFullYear();
+            var months = today.getMonth() - birth.getMonth();
+            if (today.getDate() < birth.getDate()) months--;
+            if (months < 0) { years--; months += 12; }
+            if (years < 0) { years = 0; months = 0; }
+            document.getElementById('ageDisplay').textContent = '约 ' + years + ' 岁 ' + months + ' 个月 · 年龄将影响活力维度校正';
+        }
+
+        function calcAgeFromYear(yearStr) {
+            if (!yearStr) {
+                document.getElementById('ageDisplay').textContent = '✨填写后年龄将影响活力维度的校正';
+                return;
+            }
+            var today = new Date();
+            var years = today.getFullYear() - parseInt(yearStr);
+            document.getElementById('ageDisplay').textContent = '约 ' + years + ' 岁 · 年龄将影响活力维度校正';
+        }
+
+        // ===== 启动测试（15题） =====
+        function startTest() {
+            petType = document.getElementById('petTypeSelect').value;
+            breedId = document.getElementById('breedSelect').value || null;
+            petName = document.getElementById('petName').value.trim();
+            petGender = document.getElementById('petGender').value || '';
+
+            var yearOnly = document.getElementById('yearOnly').checked;
+            if (yearOnly) {
+                petBirthday = document.getElementById('petBirthYear').value || '';
+            } else {
+                petBirthday = document.getElementById('petBirthday').value || '';
+            }
+
+            if (!petType) { alert('请选择宠物类型 🐱🐶'); return; }
+            
+            // 新增校验：如果显示了“已有宠物”下拉框，必须选一个
+            const existingPetGroup = document.getElementById('existingPetGroup');
+            if (existingPetGroup.style.display === 'block' && !document.getElementById('existingPetSelect').value) {
+                alert('请先选择一个已有宠物，或点击“新增宠物”来创建一个。');
+                return;
+            }
+            
+            if (!petName) { alert('请输入你家毛孩子的名字 💕'); document.getElementById('petName').focus(); return; }
+            if (!breedId) { alert('请选择品种（不确定选“串串”就好）😊'); return; }
+
+            // 启动测试流程
+            answers = [];
+            currentQ = 0;
+            document.getElementById('homeSection').classList.remove('show');
+            document.getElementById('quizSection').classList.add('show');
+            renderQuestion();
+        }
+
+        // ⬇️ 新增：自动创建宠物（异步，不阻塞答题）
+        async function autoCreatePet(name, birthday, gender, type) {
+            if (!currentUser || !currentUser.id) return;
+            try {
+                await fetch(WORKER_URL + '/api/add-pet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-User-Id': currentUser.id },
+                    body: JSON.stringify({
+                        name: name,
+                        birthday: birthday || '',
+                        gender: gender || '',
+                        pet_type: type
+                    })
+                });
+            } catch (e) {
+                console.warn('自动创建宠物失败（不影响答题）', e);
+            }
+        }
+
+        // ===== 渲染题目 =====
+        function renderQuestion() {
+            var q = QUESTIONS[currentQ];
+            var total = QUESTIONS.length;
+
+            document.getElementById('qNumber').textContent = `第 ${currentQ + 1} / ${total} 题 · ` + 
+                (q.dimension === 'energy' ? '⚡ 活力维度' : q.dimension === 'social' ? '💞 社交维度' : '🦁 胆量维度');
+            document.getElementById('qText').textContent = q.text;
+            document.getElementById('progressBar').style.width = `${(currentQ / total) * 100}%`;
+
+            var container = document.getElementById('optionsContainer');
+            container.innerHTML = ''; // 清空旧内容
+
+            // 根据题目类型渲染不同UI
+            if (q.type === 'slider') {
+                // 渲染滑块题
+                let existingAnswer = answers.find(a => a.q_id === q.id);
+                let currentValue = existingAnswer ? existingAnswer.value : 50; // 默认中间
+
+                container.innerHTML = `
+                    <div class="slider-container">
+                        <input type="range" min="0" max="100" value="${currentValue}" class="slider-track" id="q_slider">
+                        <div class="slider-labels">
+                            <span class="label-start">${q.endA}</span>
+                            <span class="label-end">${q.endB}</span>
+                        </div>
+                    </div>
+                    <div class="next-btn-container">
+                        <button class="btn-next" onclick="handleSliderNext()">下一步 →</button>
+                    </div>
+                `;
+            } else {
+                // 渲染选择题 (包括经典三选一和带“都不符合”的)
+                var opts = [
+                    { key: 'A', text: q.A },
+                    { key: 'B', text: q.B },
+                    { key: 'C', text: q.C }
+                ];
+
+                if (q.type === 'choice_none') {
+                    opts.push({ key: 'D', text: '🤔 以上都不太符合' });
+                }
+
+                opts.forEach(function(o) {
+                    var btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = o.text;
+                    btn.onclick = function() {
+                        // 记录答案
+                        let idx = answers.findIndex(a => a.q_id === q.id);
+                        if (idx > -1) {
+                            answers[idx] = { q_id: q.id, selected: o.key };
+                        } else {
+                            answers.push({ q_id: q.id, selected: o.key });
+                        }
+                        // 自动进入下一题
+                        setTimeout(nextQuestion, 200);
+                    };
+                    container.appendChild(btn);
+                });
+            }
+        }
+
+        // 新增一个处理滑块题“下一步”的函数
+        function handleSliderNext() {
+            const slider = document.getElementById('q_slider');
+            const q = QUESTIONS[currentQ];
+            
+            let idx = answers.findIndex(a => a.q_id === q.id);
+            if (idx > -1) {
+                answers[idx] = { q_id: q.id, value: parseInt(slider.value) };
+            } else {
+                answers.push({ q_id: q.id, value: parseInt(slider.value) });
+            }
+            
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            var next = currentQ + 1;
+            if (next >= QUESTIONS.length) {
+                // 所有15题答完 → 判分
+                submitScoring();
+                return;
+            }
+            currentQ = next;
+            renderQuestion();
+        }
+
+        // ===== 判分（前端判分 + 提交API） =====
+        function submitScoring() {
+            document.getElementById('quizSection').classList.remove('show');
+            document.getElementById('scoringSection').classList.add('show');
+            var energyScore = 0, socialScore = 0, boldScore = 0;
+            answers.forEach(function(a) {
+                var q = QUESTIONS.find(function(qq) { return qq.id === a.q_id; });
+                if (!q) return;
+                var val = 0; // 默认分数为0
+                if (q.type === 'slider') {
+                    // 滑块题计分
+                    if (a.value <= 33) val = -1;
+                    else if (a.value >= 67) val = 1;
+                    else val = 0;
+                } else {
+                    // 选择题计分
+                    if (a.selected === 'A') val = q.A_val;
+                    else if (a.selected === 'B') val = q.B_val;
+                    else if (a.selected === 'C') val = q.C_val;
+                    else if (a.selected === 'D') val = 0; // “都不符合”计0分
+                }
+                if (q.dimension === 'energy') energyScore += val;
+                else if (q.dimension === 'social') socialScore += val;
+                else if (q.dimension === 'bold') boldScore += val;
+            });
+            // ===== 年龄校正（只影响活力维度） =====
+            var ageYears = 0;
+            if (petBirthday) {
+                var thisYear = new Date().getFullYear();
+                if (petBirthday.length === 4) {
+                    ageYears = thisYear - parseInt(petBirthday);
+                } else {
+                    ageYears = thisYear - parseInt(petBirthday.split('-')[0]);
+                }
+            }
+            if (ageYears > 0) {
+                var ageAdjust = 0;
+                if (ageYears < 1) ageAdjust = 2;
+                else if (ageYears <= 3) ageAdjust = 1;
+                else if (ageYears <= 8) ageAdjust = 0;
+                else if (ageYears <= 14) ageAdjust = -1;
+                else ageAdjust = -2;
+                energyScore = Math.max(-5, Math.min(5, energyScore + ageAdjust));
+                // 记录到结果数据（可选）
+            }
+            // 2. 极性判定
+            var energyP = energyScore >= 0 ? 'high' : 'low';
+            var socialP = socialScore >= 0 ? 'clingy' : 'lone';
+            var boldP = boldScore >= 0 ? 'bold' : 'timid';
+
+            // 3. 映射到性格编码
+            var typeMap = {
+                'low_lone_timid': 'T01', 'low_lone_bold': 'T02',
+                'low_clingy_timid': 'T03', 'low_clingy_bold': 'T04',
+                'high_lone_timid': 'T05', 'high_lone_bold': 'T06',
+                'high_clingy_timid': 'T07', 'high_clingy_bold': 'T08'
+            };
+            var typeCode = typeMap[energyP + '_' + socialP + '_' + boldP] || 'T01';
+
+            // 4. 品种对比
+            var breedMatch = null;
+            if (breedId && petType !== 'other') {
+                var allBreeds = BREEDS[petType] || [];
+                var breed = allBreeds.find(function(b) { return b.id == breedId; });
+                if (breed && breed.se) {
+                    var matchCount = 0, total = 0;
+                    var pol = { energy: energyP, social: socialP, bold: boldP };
+                    var stereo = { energy: breed.se, social: breed.ss, bold: breed.sb };
+                    ['energy','social','bold'].forEach(function(dim) {
+                        if (stereo[dim]) {
+                            total++;
+                            if (stereo[dim] === pol[dim]) matchCount++;
+                        }
+                    });
+                    var pct = total > 0 ? Math.round(matchCount / total * 100) : 0;
+                    var label = '';
+                    if (pct === 100) label = '教科书级品种 ✅ 完美符合品种标准答案';
+                    else if (pct >= 66) label = '标准品种选手 👍 大部分特征和品种一致';
+                    else if (pct >= 33) label = '个人风格突出 😏 有你自己的想法';
+                    else label = '叛逆变异株 🔥 你是不是养了个假品种？';
+                    breedMatch = { name: breed.name, emoji: breed.emoji, pct: pct, label: label, quote: breed.quote };
+                }
+            }
+
+            // 5. 组装结果数据
+            var personality = PERSONALITY_TYPES[typeCode] || PERSONALITY_TYPES['T01'];
+            resultData = {
+                typeCode: typeCode,
+                emoji: personality.emoji,
+                title: personality.title,
+                subtitle: personality.subtitle,
+                desc: personality.desc,
+                quote: personality.quote,
+                tips: personality.tips,
+                scores: { energy: energyScore, social: socialScore, bold: boldScore },
+                polarities: { energy: energyP, social: socialP, bold: boldP },
+                breedMatch: breedMatch,
+                petName: petName,
+                petType: petType
+            };
+
+            // 6. 异步提交到API（可选，不阻塞结果展示）
+            trySubmitToAPI({
+                typeCode: typeCode,
+                scores: { energy: energyScore, social: socialScore, bold: boldScore },
+                answers: answers
+            });
+
+            // 7. 展示结果
+            setTimeout(function() { showResult(); }, 800);
+        }
+
+        async function trySubmitToAPI(data) {
+            if (!currentUser || !currentUser.id) return;
+            try {
+                await fetch(WORKER_URL + '/api/personality/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        pet_type: petType,
+                        breed_id: breedId || null,
+                        answers: data.answers
+                    })
+                });
+            } catch (e) {
+                console.warn('API提交失败，仅前端展示', e);
+            }
+        }
+
+        // ===== 展示结果 =====
+        function showResult() {
+            document.getElementById('scoringSection').classList.remove('show');
+            document.getElementById('resultSection').classList.add('show');
+
+            var r = resultData;
+            if (!r) return;
+
+            var content = document.getElementById('resultContent');
+            content.innerHTML = '<div class="result-icon-big">' + r.emoji + '</div>' +
+                '<div class="result-name">' + r.title + '</div>' +
+                '<div class="result-subtitle">' + r.subtitle + '</div>';
+
+            // 分数条
+            var barsHtml = '';
+            var dims = [
+                { label: '⚡ 活力', pol: r.polarities.energy },
+                { label: '💞 社交', pol: r.polarities.social },
+                { label: '🦁 胆量', pol: r.polarities.bold }
+            ];
+            dims.forEach(function(d) {
+                var pct = d.pol === 'high' ? 80 : 20;
+                var label = d.pol === 'high' ? '偏高' : '偏低';
+                var color = d.label.indexOf('活力') >= 0 ? 'fill-energy' : (d.label.indexOf('社交') >= 0 ? 'fill-social' : 'fill-bold');
+                barsHtml += '<div class="score-row">' +
+                    '<div class="label-row"><span class="name">' + d.label + '</span><span class="val">' + label + '</span></div>' +
+                    '<div class="score-bar-bg"><div class="score-bar-fill ' + color + '" style="width:' + pct + '%"></div></div>' +
+                    '</div>';
+            });
+            document.getElementById('scoreBars').innerHTML = barsHtml;
+
+            // 性格解读
+            document.getElementById('resultDesc').style.display = 'block';
+            document.getElementById('resultDesc').textContent = r.desc;
+            document.getElementById('resultQuote').style.display = 'block';
+            document.getElementById('resultQuote').textContent = '💬 ' + r.quote;
+
+            // 品种对比
+            var breedArea = document.getElementById('breedMatchArea');
+            var breedBox = document.getElementById('breedMatchBox');
+            if (r.breedMatch) {
+                breedArea.style.display = 'block';
+                breedBox.innerHTML = '<div class="match-label">' + r.breedMatch.emoji + ' ' + r.breedMatch.label + '</div>' +
+                    '<div class="match-quote">品种刻板印象：' + r.breedMatch.quote + '</div>';
+            } else {
+                breedArea.style.display = 'none';
+            }
+
+            // 生活建议
+            var tipsHtml = '';
+            if (r.tips && r.tips.length > 0) {
+                r.tips.forEach(function(tip) {
+                    tipsHtml += '<li><span class="tip-icon">' + (tip.icon || '🏠') + '</span>' + tip.tip + '</li>';
+                });
+            }
+            document.getElementById('tipsList').innerHTML = tipsHtml;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== 分享图卡（Canvas） =====
+        function showShareCard() {
+            document.getElementById('shareOverlay').classList.add('show');
+            var canvas = document.getElementById('shareCanvas');
+            var ctx = canvas.getContext('2d');
+            var W = 600, H = 800;
+            canvas.width = W;
+            canvas.height = H;
+
+            var r = resultData;
+            if (!r) return;
+
+            // 背景
+            ctx.fillStyle = '#F5EDE8';
+            ctx.fillRect(0, 0, W, H);
+
+            // 白色卡片
+            ctx.fillStyle = '#fff';
+            roundRect(ctx, 20, 20, W - 40, H - 40, 24);
+            ctx.fill();
+
+            // 标题
+            ctx.fillStyle = '#664B3A';
+            ctx.font = 'bold 22px "PingFang SC", "Noto Sans SC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🐾 YOTOPIA 宠物性格鉴定报告', W / 2, 70);
+
+            ctx.strokeStyle = '#E8DDD6';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(60, 90);
+            ctx.lineTo(W - 60, 90);
+            ctx.stroke();
+
+            // 宠物名
+            ctx.fillStyle = '#9A8A7E';
+            ctx.font = '16px "PingFang SC", sans-serif';
+            ctx.fillText(r.petName + ' · ' + (r.petType === 'cat' ? '🐱' : r.petType === 'dog' ? '🐶' : '🐾'), W / 2, 130);
+
+            // emoji
+            ctx.font = '72px sans-serif';
+            ctx.fillText(r.emoji, W / 2, 220);
+
+            // 性格标题
+            ctx.fillStyle = '#5A4A3E';
+            ctx.font = 'bold 32px "PingFang SC", "Noto Sans SC", sans-serif';
+            ctx.fillText(r.title, W / 2, 280);
+            ctx.fillStyle = '#9A8A7E';
+            ctx.font = '16px "PingFang SC", sans-serif';
+            ctx.fillText(r.subtitle, W / 2, 310);
+
+            // 分数条
+            var scoreY = 350;
+            var dims = [
+                { label: '⚡ 活力', pol: r.polarities.energy },
+                { label: '💞 社交', pol: r.polarities.social },
+                { label: '🦁 胆量', pol: r.polarities.bold }
+            ];
+            dims.forEach(function(d, i) {
+                var y = scoreY + i * 40;
+                var pct = d.pol === 'high' ? 80 : 20;
+                var label = d.pol === 'high' ? '偏高' : '偏低';
+                ctx.fillStyle = '#5A4A3E';
+                ctx.font = '14px "PingFang SC", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(d.label + ' ' + label, 80, y);
+
+                ctx.fillStyle = '#F0EBE6';
+                roundRect(ctx, 200, y - 8, 320, 16, 8);
+                ctx.fill();
+
+                var barW = (pct / 100) * 320;
+                ctx.fillStyle = '#664B3A';
+                roundRect(ctx, 200, y - 8, barW, 16, 8);
+                ctx.fill();
+            });
+
+            // 品种
+            var breedY = scoreY + 140;
+            if (r.breedMatch) {
+                ctx.fillStyle = '#5A4A3E';
+                ctx.font = '15px "PingFang SC", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(r.breedMatch.emoji + ' ' + r.breedMatch.name, W / 2, breedY);
+                ctx.fillStyle = '#9A8A7E';
+                ctx.font = '13px "PingFang SC", sans-serif';
+                ctx.fillText('匹配度 ' + r.breedMatch.pct + '%', W / 2, breedY + 24);
+            }
+
+            // 金句
+            ctx.fillStyle = '#C4B5A9';
+            ctx.font = 'italic 14px "PingFang SC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('💬 ' + (r.quote || ''), W / 2, breedY + 70);
+
+            // 底部品牌
+            ctx.fillStyle = '#DBC6B4';
+            ctx.font = '13px "PingFang SC", sans-serif';
+            ctx.fillText('YOTOPIA ｜ Your Utopia', W / 2, H - 55);
+            ctx.fillStyle = '#C4B5A9';
+            ctx.font = '11px "PingFang SC", sans-serif';
+            ctx.fillText('让陪伴，融入自然', W / 2, H - 32);
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function closeShareCard(e) {
+            if (e && e.target !== document.getElementById('shareOverlay') && e.target.closest('.card-wrap')) return;
+            document.getElementById('shareOverlay').classList.remove('show');
+        }
+
+        // ===== 返回/重新测试 =====
+        function goHome() {
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('homeSection').classList.add('show');
+        }
+
+        function goBack() {
+            if (document.referrer && document.referrer.indexOf('yotopia.pet') !== -1) {
+                window.location.href = '/main.html';
+            } else if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/main.html';
+            }
+        }
+
+        // ===== 登录/注册弹窗 =====
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+            setTimeout(function() { document.getElementById('loginUsername').focus(); }, 200);
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('show');
+            document.body.style.overflow = '';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regNickname').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regPasswordConfirm').value = '';
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('registerError').classList.remove('show');
+        }
+
+        document.getElementById('authModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAuthModal();
+        });
+
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.modal-tab').forEach(function(el) {
+                el.classList.toggle('active', el.getAttribute('data-tab') === tab);
+            });
+            document.getElementById('loginForm').classList.toggle('show', tab === 'login');
+            document.getElementById('registerForm').classList.toggle('show', tab === 'register');
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('registerError').classList.remove('show');
+        }
+
+        async function handleLogin() {
+            var username = document.getElementById('loginUsername').value.trim();
+            var password = document.getElementById('loginPassword').value;
+            var errorEl = document.getElementById('loginError');
+            var btn = document.getElementById('loginBtn');
+
+            if (!username || !password) {
+                errorEl.textContent = '请填写用户名和密码';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            errorEl.classList.remove('show');
+            btn.disabled = true;
+            btn.textContent = '登录中...';
+
+            try {
+                var res = await fetch(WORKER_URL + '/api/visitor/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: password })
+                });
+                var data = await res.json();
+
+                if (data.success) {
+                    currentUser = data.user;
+                    localStorage.setItem('yotopia_test_user', JSON.stringify(currentUser));
+                    closeAuthModal();
+                    await showLoggedIn();
+                } else {
+                    errorEl.textContent = data.message || '登录失败';
+                    errorEl.classList.add('show');
+                }
+            } catch (e) {
+                errorEl.textContent = '网络错误，请稍后重试';
+                errorEl.classList.add('show');
+            }
+
+            btn.disabled = false;
+            btn.textContent = '登录';
+        }
+
+        async function handleRegister() {
+            var username = document.getElementById('regUsername').value.trim();
+            var nickname = document.getElementById('regNickname').value.trim();
+            var password = document.getElementById('regPassword').value;
+            var passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            var errorEl = document.getElementById('registerError');
+            var btn = document.getElementById('registerBtn');
+
+            if (!username) { errorEl.textContent = '请输入用户名'; errorEl.classList.add('show'); return; }
+            if (username.length < 2) { errorEl.textContent = '用户名至少2位'; errorEl.classList.add('show'); return; }
+            if (!nickname) nickname = username;
+            if (!password || password.length < 4) { errorEl.textContent = '密码至少4位'; errorEl.classList.add('show'); return; }
+            if (password !== passwordConfirm) { errorEl.textContent = '两次密码不一致'; errorEl.classList.add('show'); return; }
+
+            errorEl.classList.remove('show');
+            btn.disabled = true;
+            btn.textContent = '注册中...';
+
+            try {
+                var res = await fetch(WORKER_URL + '/api/visitor/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: password, nickname: nickname })
+                });
+                var data = await res.json();
+
+                if (data.success) {
+                    currentUser = data.user;
+                    localStorage.setItem('yotopia_test_user', JSON.stringify(currentUser));
+                    closeAuthModal();
+                    showLoggedIn();
+                } else {
+                    errorEl.textContent = data.message || '注册失败';
+                    errorEl.classList.add('show');
+                }
+            } catch (e) {
+                errorEl.textContent = '网络错误，请稍后重试';
+                errorEl.classList.add('show');
+            }
+
+            btn.disabled = false;
+            btn.textContent = '注册并开始测试';
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('yotopia_test_user');
+            currentUser = null;
+            isFan = false;
+            showPreview();
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var modal = document.getElementById('authModal');
+                if (!modal.classList.contains('show')) return;
+                if (document.getElementById('loginForm').classList.contains('show')) {
+                    handleLogin();
+                } else {
+                    handleRegister();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
